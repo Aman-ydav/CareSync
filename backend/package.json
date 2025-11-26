@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "backend of caresync",
+  "keywords": [
+    "my",
+    "new",
+    "projet",
+    "start",
+    "caresync"
+  ],
+  "license": "ISC",
+  "author": "aman",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
