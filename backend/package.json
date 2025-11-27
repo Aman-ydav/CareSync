@@ -3,10 +3,8 @@
   "version": "1.0.0",
   "description": "backend of caresync",
   "keywords": [
-    "my",
-    "new",
-    "projet",
-    "start",
+    "project",
+    "backend",
     "caresync"
   ],
   "license": "ISC",
@@ -14,6 +12,19 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "prettier": "^3.7.1"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mongoose": "^9.0.0"
   }
 }
