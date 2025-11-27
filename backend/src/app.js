@@ -9,6 +9,10 @@ import { ApiError } from "./utils/apiError.js";
 const app = express();
 
 
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
+  ? process.env.CORS_ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : [];
+
 app.use(
   cors({
     origin: (origin, callback) => {
