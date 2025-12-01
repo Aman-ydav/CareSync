@@ -9,9 +9,8 @@ import ThemeProvider from './components/theme/ThemeProvider'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
     <Provider store={store}>
-      <BrowserRouter>
+      <BrowserRouter basename="/">
         <ThemeProvider>
           <App />
           <Toaster 
@@ -23,5 +22,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </ThemeProvider>
       </BrowserRouter>
     </Provider>
-  </React.StrictMode>
+  
 )

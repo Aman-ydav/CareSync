@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import DashboardHeader from '@/components/dashboard/DashboardHeader'
-import VerificationModal from '@/components/auth/VerificationModal'
 import { 
   Stethoscope, 
   Calendar, 
@@ -150,8 +149,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background">
-      {/* Verification Modal */}
-      <VerificationModal />
+     
       
       {/* Dashboard Header */}
       <DashboardHeader />
@@ -175,7 +173,7 @@ const Dashboard = () => {
               </p>
             </div>
             <Button className="bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-primary-foreground dark:text-primary-foreground font-medium">
-              <Link to="/appointments/new" className="flex items-center gap-2">
+              <Link to="/dashboard" className="flex items-center gap-2">
                 Book Appointment <Calendar className="w-4 h-4" />
               </Link>
             </Button>

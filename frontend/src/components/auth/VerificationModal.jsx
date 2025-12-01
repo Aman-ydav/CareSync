@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { verifyEmail, resendVerificationCode, hideVerificationModal } from "@/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ const VerificationModal = () => {
   const [timer, setTimer] = useState(300);
   const [error, setError] = useState("");
 
+  // refs
   const inputRefs = [
     useRef(null),
     useRef(null),
@@ -26,11 +27,36 @@ const VerificationModal = () => {
     useRef(null),
   ];
 
+  // Guard to ensure auto-send happens exactly once per modal open
+  const sentOnceRef = useRef(false);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!showModal) {
+      setCode(["", "", "", "", "", ""]);
+      setTimer(300);
+      setError("");
+      sentOnceRef.current = false;
+    }
+  }, [showModal]);
+
+  // Auto-send verification email when modal opens - only once per open
+  useEffect(() => {
+    if (showModal && email && !sentOnceRef.current) {
+      // call auto resend but only if not currently resending
+      if (!resending) {
+        handleAutoResend();
+      }
+      sentOnceRef.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal, email]); // intentionally omit handleAutoResend to avoid re-creating effect
+
   useEffect(() => {
     let interval;
     if (showModal && timer > 0) {
       interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
+        setTimer((prev) => Math.max(0, prev - 1));
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -41,6 +67,22 @@ const VerificationModal = () => {
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const handleAutoResend = useCallback(async () => {
+    try {
+      // prevent accidental double-calls
+      if (sentOnceRef.current && resending) return;
+      await dispatch(resendVerificationCode(email)).unwrap();
+      toast.success("Verification code sent to your email!");
+      setTimer(300);
+      setCode(["", "", "", "", "", ""]);
+      setError("");
+      setTimeout(() => inputRefs[0].current?.focus(), 100);
+    } catch (err) {
+      toast.error(err || "Failed to send verification code");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, email]);
 
   const handleCodeChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
@@ -67,10 +109,7 @@ const VerificationModal = () => {
     if (/^\d{6}$/.test(pasteData)) {
       const digits = pasteData.split("");
       setCode(digits);
-      
-      setTimeout(() => {
-        inputRefs[5].current?.focus();
-      }, 10);
+      setTimeout(() => inputRefs[5].current?.focus(), 10);
     }
   };
 
@@ -82,7 +121,7 @@ const VerificationModal = () => {
 
   const handleSubmit = async (verificationCode = null) => {
     const fullCode = verificationCode || code.join("");
-    
+
     if (fullCode.length !== 6) {
       setError("Please enter all 6 digits");
       return;
@@ -101,12 +140,15 @@ const VerificationModal = () => {
   };
 
   const handleResend = async () => {
+    // extra guard: don't allow resend while resending or if timer not yet expired enough
+    if (resending) return;
     try {
       await dispatch(resendVerificationCode(email)).unwrap();
       setTimer(300);
       setCode(["", "", "", "", "", ""]);
       setError("");
       inputRefs[0].current?.focus();
+      toast.success("New verification code sent!");
     } catch (err) {
       toast.error(err || "Failed to resend code");
     }
@@ -116,6 +158,7 @@ const VerificationModal = () => {
     dispatch(hideVerificationModal());
     setCode(["", "", "", "", "", ""]);
     setError("");
+    sentOnceRef.current = false;
   };
 
   if (!showModal) return null;
@@ -134,9 +177,7 @@ const VerificationModal = () => {
           exit={{ scale: 0.9, opacity: 0 }}
           className="relative w-full max-w-md mx-4"
         >
-          {/* Modal Container */}
-          <div className="bg-white dark:bg-card rounded-xl shadow-2xl dark:shadow-2xl p-6 border border-border dark:border-border/50">
-            {/* Close Button */}
+          <div className="bg-white dark:bg-card rounded-xl shadow-2xl p-6 border border-border dark:border-border/50">
             <button
               onClick={handleClose}
               className="absolute top-4 right-4 p-1 rounded-full hover:bg-muted dark:hover:bg-muted/50 transition-colors"
@@ -144,7 +185,6 @@ const VerificationModal = () => {
               <X className="w-5 h-5 text-muted-foreground dark:text-muted-foreground" />
             </button>
 
-            {/* Header */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/20 mb-4 border border-primary/20 dark:border-primary/30">
                 <Mail className="w-8 h-8 text-primary dark:text-primary" />
@@ -161,7 +201,6 @@ const VerificationModal = () => {
               </p>
             </div>
 
-            {/* Timer */}
             <div className="mb-6 text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted dark:bg-muted/50 rounded-full border border-border dark:border-border/50">
                 <AlertCircle className="w-4 h-4 text-muted-foreground dark:text-muted-foreground" />
@@ -174,7 +213,6 @@ const VerificationModal = () => {
               </div>
             </div>
 
-            {/* Code Inputs */}
             <div className="mb-6">
               <Label className="block text-sm font-medium text-foreground dark:text-foreground mb-3">
                 Enter 6-digit verification code
@@ -195,12 +233,9 @@ const VerificationModal = () => {
                   />
                 ))}
               </div>
-              {error && (
-                <p className="mt-2 text-sm text-destructive dark:text-destructive text-center">{error}</p>
-              )}
+              {error && <p className="mt-2 text-sm text-destructive dark:text-destructive text-center">{error}</p>}
             </div>
 
-            {/* Action Buttons */}
             <div className="space-y-3">
               <Button
                 onClick={() => handleSubmit()}
@@ -242,7 +277,6 @@ const VerificationModal = () => {
               </Button>
             </div>
 
-            {/* Footer */}
             <div className="mt-6 pt-4 border-t border-border dark:border-border/50">
               <p className="text-xs text-muted-foreground dark:text-muted-foreground text-center">
                 Didn't receive the email? Check your spam folder or try resending the code.

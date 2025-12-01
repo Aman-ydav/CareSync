@@ -1,9 +1,9 @@
-// src/components/DashboardHeader.jsx
 import { useSelector, useDispatch } from "react-redux";
-import { showVerificationModal } from "@/features/auth/authSlice"; // REMOVE resendVerificationCode import
+import { showVerificationModal } from "@/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Mail } from "lucide-react";
-import { toast } from "sonner";
+import { AlertCircle, Mail, Timer } from "lucide-react";
+import { Link } from "react-router-dom";
+
 
 const DashboardHeader = () => {
   const dispatch = useDispatch();
@@ -11,14 +11,11 @@ const DashboardHeader = () => {
 
   const handleVerifyClick = () => {
     if (user?.email) {
-      // Only show the modal, DON'T auto-send email
       dispatch(showVerificationModal(user.email));
-      // The modal will handle auto-sending on its own
-      toast.info("Verification modal opened. Code will be sent automatically.");
     }
   };
 
-  // If user is verified or doesn't exist, don't show anything
+ 
   if (!user || user.isVerified) return null;
 
   return (
@@ -47,14 +44,17 @@ const DashboardHeader = () => {
             <Mail className="h-4 w-4 mr-2" />
             Verify Now
           </Button>
+         
+         <Link to="/dashboard">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={() => toast.info("You can verify anytime from your profile")}
-            className="text-yellow-700 dark:text-yellow-300"
+            className="border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-800"
           >
-            Later
+            <Timer className="h-4 w-4 mr-2" />
+            Do it Later
           </Button>
+          </Link>
         </div>
       </div>
     </div>

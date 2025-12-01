@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { registerUser, showVerificationModal } from "@/features/auth/authSlice";
+import { registerUser } from "@/features/auth/authSlice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,12 +15,16 @@ import {
   Stethoscope,
   BriefcaseMedical,
   UserCircle,
+  Camera
 } from "lucide-react";
 
 const RegisterForm = ({ switchToLogin, onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector((state) => state.auth);
+
+  const [avatar, setAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   const [formData, setFormData] = useState({
     userName: "",
@@ -48,9 +52,8 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
         setOpenRole(false);
       }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleChange = (e) => {
@@ -73,33 +76,46 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
     if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
     if (!formData.role) newErrors.role = "Please select your role";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    try {
-      const result = await dispatch(
-        registerUser({
-          ...formData,
-          confirmePassword: formData.confirmPassword,
-        })
-      ).unwrap();
-
-      if (result.requiresVerification) {
-        dispatch(showVerificationModal(result.email));
-      } else {
-        toast.success("Account created successfully!");
-        onClose();
-        navigate("/dashboard");
-      }
-    } catch (err) {
-      toast.error(err || "Registration failed. Please try again.");
+  
+  const handleAvatar = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatar(file);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+
+  try {
+    const fd = new FormData();
+    fd.append("userName", formData.userName);
+    fd.append("fullName", formData.fullName);
+    fd.append("email", formData.email);
+    fd.append("password", formData.password);
+    fd.append("confirmPassword", formData.confirmPassword);
+    fd.append("role", formData.role);
+    fd.append("gender", formData.gender);
+
+    if (avatar) fd.append("avatar", avatar);
+
+    const result = await dispatch(registerUser(fd)).unwrap();
+
+    toast.success("Account created successfully!");
+    onClose();
+    navigate("/dashboard");
+  } catch (err) {
+    toast.error(err || "Registration failed. Please try again.");
+  }
+};
+
 
   const roles = [
     { value: "PATIENT", label: "Patient", icon: UserCircle },
@@ -114,191 +130,176 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
   ];
 
   const getRoleIcon = (roleValue) => {
-    const role = roles.find(r => r.value === roleValue);
+    const role = roles.find((r) => r.value === roleValue);
     return role ? <role.icon className="h-4 w-4" /> : <UserCircle className="h-4 w-4" />;
   };
 
   return (
     <div className="space-y-6">
+      {/* HEADER */}
       <div className="text-center space-y-2">
-        <div className="flex justify-center mb-2">
-          <div className="p-3 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
-            <Stethoscope className="h-6 w-6 text-primary dark:text-primary" />
+        <p className="text-sm text-muted-foreground">Create a CareSync account</p>
+      </div>
+
+      {/* AVATAR UPLOAD */}
+      <div className="w-full flex justify-center">
+        <label className="relative group cursor-pointer">
+          <div className="w-24 h-24 rounded-full border border-border bg-muted flex items-center justify-center overflow-hidden">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+              <Camera className="w-8 h-8 text-muted-foreground" />
+            )}
           </div>
-        </div>
-        <p className="text-sm text-muted-foreground dark:text-muted-foreground">
-          Create an CareSync account
-        </p>
+
+          <input type="file"  name="avatar" accept="image/*" className="hidden" onChange={handleAvatar} />
+
+          <span className="absolute bottom-1 right-1 bg-primary text-white p-1 rounded-full">
+            <Camera className="w-4 h-4" />
+          </span>
+        </label>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
         {/* Username */}
         <div>
-          <Label htmlFor="userName" className="text-sm font-medium text-foreground dark:text-foreground">Username</Label>
+          <Label>Username</Label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              id="userName"
               name="userName"
               placeholder="Enter Username"
               value={formData.userName}
               onChange={handleChange}
-              className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
+              className="pl-9"
             />
           </div>
-          {errors.userName && (
-            <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.userName}</p>
-          )}
+          {errors.userName && <p className="text-xs text-destructive">{errors.userName}</p>}
         </div>
 
+        {/* Name + Email + Passwords */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Full Name */}
+
           <div>
-            <Label htmlFor="fullName" className="text-sm font-medium text-foreground dark:text-foreground">Full Name</Label>
+            <Label>Full Name</Label>
             <Input
-              id="fullName"
               name="fullName"
               placeholder="Enter Fullname"
               value={formData.fullName}
               onChange={handleChange}
-              className="h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
             />
-            {errors.fullName && (
-              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.fullName}</p>
-            )}
+            {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
           </div>
 
-          {/* Email */}
           <div>
-            <Label htmlFor="email" className="text-sm font-medium text-foreground dark:text-foreground">Email</Label>
+            <Label>Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                id="email"
                 name="email"
                 type="email"
                 placeholder="Enter Email"
                 value={formData.email}
                 onChange={handleChange}
-                className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
+                className="pl-9"
               />
             </div>
-            {errors.email && (
-              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.email}</p>
-            )}
+            {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
           </div>
 
-          {/* Password */}
           <div>
-            <Label htmlFor="password" className="text-sm font-medium text-foreground dark:text-foreground">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Enter Password"
-                value={formData.password}
-                onChange={handleChange}
-                className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
-              />
-            </div>
-            {errors.password && (
-              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.password}</p>
-            )}
+            <Label>Password</Label>
+            <Input
+              name="password"
+              type="password"
+              placeholder="Enter Password"
+              value={formData.password}
+              onChange={handleChange}
+            />
+            {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
           </div>
 
-          {/* Confirm Password */}
           <div>
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground dark:text-foreground">Confirm Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
-              />
-            </div>
+            <Label>Confirm Password</Label>
+            <Input
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+            />
             {errors.confirmPassword && (
-              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.confirmPassword}</p>
+              <p className="text-xs text-destructive">{errors.confirmPassword}</p>
             )}
           </div>
 
-          {/* Gender Dropdown */}
+          {/* Gender */}
           <div>
-            <Label className="text-sm font-medium text-foreground dark:text-foreground">Gender</Label>
+            <Label>Gender</Label>
             <div className="relative" ref={genderRef}>
               <button
                 type="button"
                 onClick={() => setOpenGender(!openGender)}
-                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white dark:bg-card text-left transition-all ${
-                  openGender ? 'border-primary ring-1 ring-primary dark:ring-primary/30' : 'border-border dark:border-border'
-                } ${formData.gender ? 'text-foreground dark:text-foreground' : 'text-muted-foreground dark:text-muted-foreground'}`}
+                className="w-full h-10 px-3 border rounded-md flex items-center justify-between"
               >
-                <span>{formData.gender || "Select gender"}</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${openGender ? 'rotate-180' : ''}`} />
+                {formData.gender || "Select gender"}
+                <ChevronDown className="h-4 w-4" />
               </button>
-              
               {openGender && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-card border border-border dark:border-border rounded-md shadow-lg dark:shadow-xl max-h-60 overflow-y-auto">
-                  {genders.map((gender) => (
+                <div className="absolute w-full bg-white border rounded-md mt-1 shadow">
+                  {genders.map((g) => (
                     <button
-                      key={gender.value}
+                      key={g.value}
                       type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-muted"
                       onClick={() => {
-                        setFormData(prev => ({ ...prev, gender: gender.value }));
+                        setFormData((p) => ({ ...p, gender: g.value }));
                         setOpenGender(false);
                       }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted dark:hover:bg-muted text-foreground dark:text-foreground transition-colors"
                     >
-                      {gender.label}
+                      {g.label}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            {errors.gender && (
-              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.gender}</p>
-            )}
+            {errors.gender && <p className="text-xs text-destructive">{errors.gender}</p>}
           </div>
 
-          {/* Role Dropdown */}
+          {/* Role */}
           <div>
-            <Label className="text-sm font-medium text-foreground dark:text-foreground">I am a</Label>
+            <Label>I am a</Label>
             <div className="relative" ref={roleRef}>
               <button
                 type="button"
                 onClick={() => setOpenRole(!openRole)}
-                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white dark:bg-card text-left transition-all ${
-                  openRole ? 'border-primary ring-1 ring-primary dark:ring-primary/30' : 'border-border dark:border-border'
-                } ${formData.role ? 'text-foreground dark:text-foreground' : 'text-muted-foreground dark:text-muted-foreground'}`}
+                className="w-full h-10 px-3 border rounded-md flex items-center justify-between"
               >
                 <span className="flex items-center gap-2">
                   {formData.role ? (
                     <>
                       {getRoleIcon(formData.role)}
-                      {roles.find(r => r.value === formData.role)?.label}
+                      {roles.find((r) => r.value === formData.role)?.label}
                     </>
-                  ) : "Select role"}
+                  ) : (
+                    "Select role"
+                  )}
                 </span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${openRole ? 'rotate-180' : ''}`} />
+                <ChevronDown className="h-4 w-4" />
               </button>
-              
+
               {openRole && (
-                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-card border border-border dark:border-border rounded-md shadow-lg dark:shadow-xl max-h-60 overflow-y-auto">
+                <div className="absolute w-full bg-white border rounded-md mt-1 shadow">
                   {roles.map((role) => (
                     <button
                       key={role.value}
                       type="button"
+                      className="w-full px-3 py-2 flex items-center gap-2 hover:bg-muted"
                       onClick={() => {
-                        setFormData(prev => ({ ...prev, role: role.value }));
+                        setFormData((p) => ({ ...p, role: role.value }));
                         setOpenRole(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted dark:hover:bg-muted text-foreground dark:text-foreground transition-colors"
                     >
                       <role.icon className="h-4 w-4" />
                       {role.label}
@@ -307,22 +308,19 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                 </div>
               )}
             </div>
-            {errors.role && (
-              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.role}</p>
-            )}
+            {errors.role && <p className="text-xs text-destructive">{errors.role}</p>}
           </div>
         </div>
 
-        {/* Submit */}
+        {/* SUBMIT */}
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-11 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-primary-foreground dark:text-primary-foreground font-medium"
+          className="w-full h-11 bg-primary text-white"
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating account...
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating account...
             </>
           ) : (
             "Create Account"
@@ -330,15 +328,11 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
         </Button>
       </form>
 
-      {/* Footer */}
+      {/* FOOTER */}
       <div className="text-center pt-2">
-        <p className="text-sm text-muted-foreground dark:text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Button
-            variant="link"
-            className="p-0 text-primary dark:text-primary text-sm font-medium hover:no-underline"
-            onClick={switchToLogin}
-          >
+          <Button variant="link" onClick={switchToLogin} className="p-0 text-primary">
             Sign in
           </Button>
         </p>

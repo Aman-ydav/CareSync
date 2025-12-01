@@ -5,7 +5,6 @@ import { X } from "lucide-react";
 
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
-import VerificationModal from "./VerificationModal";
 
 const AuthModal = ({ type }) => {
   const navigate = useNavigate();
@@ -37,9 +36,7 @@ const AuthModal = ({ type }) => {
   }, []);
 
   return (
-    <>
-      <VerificationModal />
-      
+    <>    
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0 }}

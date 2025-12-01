@@ -2,28 +2,31 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "@/api/axiosInterceptor";
 import { toast } from "sonner";
 
-// Register User - SIMILAR TO ROOMEZY but supports email verification flow
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (userData, { rejectWithValue }) => {
     try {
-      const form = new FormData();
-      Object.entries(userData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          form.append(key, value);
-        }
-      });
+      
+      let form;
+      if (userData instanceof FormData) {
+        form = userData;
+      } else {
+        form = new FormData();
+        Object.entries(userData).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            form.append(key, value);
+          }
+        });
+      }
 
       const response = await api.post("/users/register", form, {
-        headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
 
-      // Assume backend returns { user, accessToken, refreshToken, requiresVerification? }
-      const { user, accessToken, refreshToken, requiresVerification } =
+      const { user, accessToken, refreshToken } =
         response.data.data || {};
 
-      // Store in localStorage - LIKE ROOMEZY
+      // store tokens/user (same as before)
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem(
         "caresync_tokens",
@@ -34,16 +37,8 @@ export const registerUser = createAsyncThunk(
         api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       }
 
-      // If backend requires verification, prompt user to verify via modal
-      if (requiresVerification) {
-        toast.success(
-          "Account created successfully! Please verify your email."
-        );
-        return { user, requiresVerification: true, email: user?.email };
-      } else {
-        toast.success("Account created successfully!");
-        return user;
-      }
+      toast.success("Account created successfully!");
+      return user;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Registration failed"
@@ -52,7 +47,6 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Verify Email (from first slice)
 export const verifyEmail = createAsyncThunk(
   "auth/verifyEmail",
   async (verificationData, { rejectWithValue }) => {
@@ -71,7 +65,6 @@ export const verifyEmail = createAsyncThunk(
   }
 );
 
-// Resend Verification Code (from first slice)
 export const resendVerificationCode = createAsyncThunk(
   "auth/resendVerificationCode",
   async (email, { rejectWithValue }) => {
@@ -94,7 +87,6 @@ export const resendVerificationCode = createAsyncThunk(
   }
 );
 
-// Update loginUser thunk in authSlice.js
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, { rejectWithValue, dispatch }) => {
@@ -122,26 +114,14 @@ export const loginUser = createAsyncThunk(
 
       api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
-      // If verification required, show modal
-      if (requiresVerification) {
-        toast.success("Please verify your email to continue");
-        // Dispatch action to show verification modal
-        return {
-          user,
-          requiresVerification: true,
-          email: user?.email,
-        };
-      } else {
-        toast.success("Welcome to CareSync!");
-        return user;
-      }
+      toast.success("Welcome to CareSync!");
+      return user;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
 );
 
-// Refresh Token - SIMILAR TO ROOMEZY
 export const refreshAccessToken = createAsyncThunk(
   "auth/refreshAccessToken",
   async (_, { rejectWithValue }) => {
@@ -183,7 +163,6 @@ export const refreshAccessToken = createAsyncThunk(
   }
 );
 
-// Logout User - SIMILAR TO ROOMEZY
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
@@ -206,7 +185,6 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-// Get Current User
 export const fetchCurrentUser = createAsyncThunk(
   "auth/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
@@ -222,7 +200,6 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 );
 
-// Forgot Password
 export const forgotPassword = createAsyncThunk(
   "auth/forgotPassword",
   async (email, { rejectWithValue }) => {
@@ -238,7 +215,6 @@ export const forgotPassword = createAsyncThunk(
   }
 );
 
-// Reset Password
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async ({ token, password }, { rejectWithValue }) => {
@@ -256,7 +232,6 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
-// Update User Data (sync helper)
 export const updateUserData = (userData) => (dispatch) => {
   dispatch(updateUser(userData));
 
@@ -337,20 +312,10 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        // registration may return either user object or { user, requiresVerification, email }
-        if (action.payload && action.payload.user) {
-          state.user = action.payload.user;
-          state.isAuthenticated = true;
-          if (action.payload.requiresVerification) {
-            state.verification.showModal = true;
-            state.verification.email = action.payload.email;
-          }
-        } else {
-          // payload is just user
-          state.user = action.payload;
-          state.isAuthenticated = true;
-        }
+        state.user = action.payload;
+        state.isAuthenticated = true;
       })
+
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -389,7 +354,6 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -399,6 +363,7 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
       })
+
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

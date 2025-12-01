@@ -118,16 +118,6 @@ const registerUser = asyncHandler(async (req, res) => {
     verificationCodeExpire: Date.now() + 10 * 60 * 1000,
   });
 
-  // Send verification email (Async)
-  const html = `
-    <div style="font-family:sans-serif;padding:20px;">
-      <h3>CareSync Email Verification</h3>
-      <p>Your 6-digit verification code:</p>
-      <h2>${verificationCode}</h2>
-      <p>This code expires in 10 minutes.</p>
-    </div>
-  `;
-  await sendEmail(email, "Verify your CareSync account", html);
 
   // Generate tokens
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
