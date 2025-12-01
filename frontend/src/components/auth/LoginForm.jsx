@@ -37,9 +37,9 @@ const LoginForm = ({ switchToRegister, onClose }) => {
     if (!validateForm()) return;
 
     try {
-      await dispatch(
+       await dispatch(
         loginUser({
-          identifier: formData.email,
+          email: formData.email,  
           password: formData.password,
         })
       ).unwrap();
@@ -61,9 +61,6 @@ const LoginForm = ({ switchToRegister, onClose }) => {
             <Stethoscope className="h-6 w-6 text-primary" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-          Welcome Back
-        </h2>
         <p className="text-muted-foreground">
           Sign in to your CareSync account
         </p>

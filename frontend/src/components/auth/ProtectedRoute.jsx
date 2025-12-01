@@ -1,15 +1,33 @@
-import { Navigate, useLocation } from 'react-router-dom';
+// src/components/ProtectedRoute.jsx
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import VerificationModal from './VerificationModal';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const location = useLocation();
+  const { user, isAuthenticated, verification } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  useEffect(() => {
+    // If not authenticated, redirect to login
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
 
-  return children;
+    // If authenticated but not verified, ensure modal is shown
+    // This handles cases where user reloads page or comes back
+    if (user && !user.isVerified && !verification.showModal) {
+      // We'll handle this with a separate effect or component
+    }
+  }, [isAuthenticated, user, navigate, verification.showModal]);
+
+  return (
+    <>
+      {children}
+      <VerificationModal />
+    </>
+  );
 };
 
 export default ProtectedRoute;

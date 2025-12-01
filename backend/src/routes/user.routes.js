@@ -12,7 +12,8 @@ import {
   getUserProfileById,
   updateAccountDetails,
   updateUserAvatar,
-  deleteAccount
+  deleteAccount,
+  resendVerificationCode,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -26,6 +27,8 @@ router.route("/register").post(
 );
 
 router.route("/verify-email").post(verifyEmail);
+
+router.route("/resend-verification").post(resendVerificationCode);
 
 router.route("/login").post(loginUser);
 

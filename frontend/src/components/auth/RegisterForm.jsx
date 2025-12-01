@@ -1,23 +1,19 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "@/features/auth/authSlice";
+import { registerUser, showVerificationModal } from "@/features/auth/authSlice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import {
-  Camera,
   User,
   Mail,
   Lock,
-  Phone,
-  Calendar,
   Loader2,
   ChevronDown,
   Stethoscope,
-  Briefcase,
+  BriefcaseMedical,
   UserCircle,
 } from "lucide-react";
 
@@ -33,12 +29,9 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
     password: "",
     confirmPassword: "",
     role: "",
-    phone: "",
-    dob: "",
     gender: "",
   });
 
-  const [previewAvatar, setPreviewAvatar] = useState(null);
   const [errors, setErrors] = useState({});
   const [openGender, setOpenGender] = useState(false);
   const [openRole, setOpenRole] = useState(false);
@@ -46,18 +39,25 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
   const genderRef = useRef(null);
   const roleRef = useRef(null);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (genderRef.current && !genderRef.current.contains(event.target)) {
+        setOpenGender(false);
+      }
+      if (roleRef.current && !roleRef.current.contains(event.target)) {
+        setOpenRole(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, avatar: file }));
-      setPreviewAvatar(URL.createObjectURL(file));
-    }
   };
 
   const validateForm = () => {
@@ -83,16 +83,22 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
     if (!validateForm()) return;
 
     try {
-      await dispatch(
+      const result = await dispatch(
         registerUser({
           ...formData,
-          confirmePassword: formData.confirmPassword, // map spelling mismatch
+          confirmePassword: formData.confirmPassword,
         })
       ).unwrap();
 
-      toast.success("Account created successfully!");
-      onClose();
-      navigate("/dashboard");
+      // Show verification modal after successful registration
+      if (result.requiresVerification) {
+        dispatch(showVerificationModal(result.email));
+        // Don't close modal or navigate - verification modal will show
+      } else {
+        toast.success("Account created successfully!");
+        onClose();
+        navigate("/dashboard");
+      }
     } catch (err) {
       toast.error(err || "Registration failed. Please try again.");
     }
@@ -101,179 +107,202 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
   const roles = [
     { value: "PATIENT", label: "Patient", icon: UserCircle },
     { value: "DOCTOR", label: "Doctor", icon: Stethoscope },
-    { value: "ADMIN", label: "Administrator", icon: Briefcase },
+    { value: "ADMIN", label: "Administrator", icon: BriefcaseMedical },
   ];
 
-  const genders = ["Male", "Female", "Other"];
+  const genders = [
+    { value: "Male", label: "Male" },
+    { value: "Female", label: "Female" },
+    { value: "Other", label: "Other" },
+  ];
+
+  const getRoleIcon = (roleValue) => {
+    const role = roles.find(r => r.value === roleValue);
+    return role ? <role.icon className="h-4 w-4" /> : <UserCircle className="h-4 w-4" />;
+  };
 
   return (
-    <div className="space-y-6 max-h-[80vh] overflow-y-auto">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="flex justify-center mb-2">
           <div className="p-3 rounded-full bg-primary/10">
             <Stethoscope className="h-6 w-6 text-primary" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-          Join CareSync
-        </h2>
-        <p className="text-muted-foreground">Create your healthcare account</p>
+       
+        <p className="text-sm text-gray-600">
+          Create an CareSync account
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Avatar Upload */}
-        <div className="flex justify-center">
+        {/* Username */}
+        <div>
+          <Label htmlFor="userName" className="text-sm font-medium text-gray-700">Username</Label>
           <div className="relative">
-            <Avatar className="h-20 w-20 border-2 border-primary">
-              <AvatarImage src={previewAvatar} />
-              <AvatarFallback>
-                <User className="h-8 w-8" />
-              </AvatarFallback>
-            </Avatar>
-            <label
-              htmlFor="avatar"
-              className="absolute -bottom-1 -right-1 p-1 bg-primary rounded-full cursor-pointer"
-            >
-              <Camera className="h-3 w-3 text-white" />
-            </label>
-            <input
-              id="avatar"
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="hidden"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Full Name */}
-          <div>
-            <Label htmlFor="fullName">Full Name</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                id="fullName"
-                name="fullName"
-                placeholder="Enter your full name"
-                value={formData.fullName}
-                onChange={handleChange}
-                className="pl-9"
-              />
-            </div>
-            {errors.fullName && (
-              <p className="text-sm text-destructive">{errors.fullName}</p>
-            )}
-          </div>
-
-          {/* Username */}
-          <div>
-            <Label htmlFor="userName">Username</Label>
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               id="userName"
               name="userName"
-              placeholder="Choose a username"
+              placeholder="Enter Username"
               value={formData.userName}
               onChange={handleChange}
+              className="pl-9 h-10"
             />
+          </div>
+          {errors.userName && (
+            <p className="text-xs text-red-600 mt-1">{errors.userName}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Full Name */}
+          <div>
+            <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name</Label>
+            <Input
+              id="fullName"
+              name="fullName"
+              placeholder="Enter Fullname"
+              value={formData.fullName}
+              onChange={handleChange}
+              className="h-10"
+            />
+            {errors.fullName && (
+              <p className="text-xs text-red-600 mt-1">{errors.fullName}</p>
+            )}
           </div>
 
           {/* Email */}
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Enter Email"
                 value={formData.email}
                 onChange={handleChange}
-                className="pl-9"
+                className="pl-9 h-10"
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-destructive">{errors.email}</p>
+              <p className="text-xs text-red-600 mt-1">{errors.email}</p>
             )}
           </div>
 
-          {/* Gender Selection */}
+          {/* Password */}
           <div>
-            <Label htmlFor="gender">Gender</Label>
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter Password"
+                value={formData.password}
+                onChange={handleChange}
+                className="pl-9 h-10"
+              />
+            </div>
+            {errors.password && (
+              <p className="text-xs text-red-600 mt-1">{errors.password}</p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="pl-9 h-10"
+              />
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>
+            )}
+          </div>
+
+          {/* Gender Dropdown */}
+          <div>
+            <Label className="text-sm font-medium text-gray-700">Gender</Label>
             <div className="relative" ref={genderRef}>
               <button
                 type="button"
                 onClick={() => setOpenGender(!openGender)}
-                className="w-full flex items-center justify-between p-2 border rounded-md bg-background text-left"
+                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white text-left transition-all ${
+                  openGender ? 'border-primary ring-1 ring-primary' : 'border-gray-300'
+                } ${formData.gender ? 'text-gray-900' : 'text-gray-500'}`}
               >
-                {formData.gender || "Select gender"}
-                <ChevronDown className="h-4 w-4" />
+                <span>{formData.gender || "Select gender"}</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${openGender ? 'rotate-180' : ''}`} />
               </button>
-
+              
               {openGender && (
-                <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg">
-                  {["Male", "Female", "Other"].map((g) => (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {genders.map((gender) => (
                     <button
-                      key={g}
+                      key={gender.value}
                       type="button"
                       onClick={() => {
-                        setFormData((prev) => ({ ...prev, gender: g }));
+                        setFormData(prev => ({ ...prev, gender: gender.value }));
                         setOpenGender(false);
                       }}
-                      className="w-full p-2 hover:bg-accent text-left"
+                      className="w-full px-3 py-2 text-left hover:bg-ring text-gray-700 transition-colors"
                     >
-                      {g}
+                      {gender.label}
                     </button>
                   ))}
                 </div>
               )}
             </div>
             {errors.gender && (
-              <p className="text-sm text-destructive">{errors.gender}</p>
+              <p className="text-xs text-red-600 mt-1">{errors.gender}</p>
             )}
           </div>
 
-          {/* Role Selection */}
+          {/* Role Dropdown */}
           <div>
-            <Label htmlFor="role">I am a</Label>
+            <Label className="text-sm font-medium text-gray-700">I am a</Label>
             <div className="relative" ref={roleRef}>
               <button
                 type="button"
                 onClick={() => setOpenRole(!openRole)}
-                className="w-full flex items-center justify-between p-2 border rounded-md bg-background text-left"
+                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white text-left transition-all ${
+                  openRole ? 'border-primary ring-1 ring-primary' : 'border-gray-300'
+                } ${formData.role ? 'text-gray-900' : 'text-gray-500'}`}
               >
                 <span className="flex items-center gap-2">
                   {formData.role ? (
                     <>
-                      {(() => {
-                        const role = roles.find(
-                          (r) => r.value === formData.role
-                        );
-                        const Icon = role?.icon;
-                        return Icon ? <Icon className="h-4 w-4" /> : null;
-                      })()}
-                      {roles.find((r) => r.value === formData.role)?.label}
+                      {getRoleIcon(formData.role)}
+                      {roles.find(r => r.value === formData.role)?.label}
                     </>
-                  ) : (
-                    "Select role"
-                  )}
+                  ) : "Select role"}
                 </span>
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className={`h-4 w-4 transition-transform ${openRole ? 'rotate-180' : ''}`} />
               </button>
-
+              
               {openRole && (
-                <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                   {roles.map((role) => (
                     <button
                       key={role.value}
                       type="button"
                       onClick={() => {
-                        setFormData((prev) => ({ ...prev, role: role.value }));
+                        setFormData(prev => ({ ...prev, role: role.value }));
                         setOpenRole(false);
                       }}
-                      className="w-full flex items-center gap-2 p-2 hover:bg-accent text-left"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-ring text-gray-700 transition-colors"
                     >
                       <role.icon className="h-4 w-4" />
                       {role.label}
@@ -283,58 +312,18 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               )}
             </div>
             {errors.role && (
-              <p className="text-sm text-destructive">{errors.role}</p>
-            )}
-          </div>
-
-          {/* Password */}
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Create a password"
-                value={formData.password}
-                onChange={handleChange}
-                className="pl-9"
-              />
-            </div>
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password}</p>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="pl-9"
-              />
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-sm text-destructive">
-                {errors.confirmPassword}
-              </p>
+              <p className="text-xs text-red-600 mt-1">{errors.role}</p>
             )}
           </div>
         </div>
 
+       
+      
         {/* Submit */}
         <Button
           type="submit"
           disabled={loading}
-          className="w-full medical-gradient"
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-sm font-medium"
         >
           {loading ? (
             <>
@@ -348,12 +337,12 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
       </form>
 
       {/* Footer */}
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
+      <div className="text-center pt-2">
+        <p className="text-sm text-gray-600">
           Already have an account?{" "}
           <Button
             variant="link"
-            className="p-0 text-primary"
+            className="p-0 text-primary text-sm font-medium"
             onClick={switchToLogin}
           >
             Sign in
