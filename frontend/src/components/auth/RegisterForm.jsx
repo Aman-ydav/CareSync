@@ -39,7 +39,6 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
   const genderRef = useRef(null);
   const roleRef = useRef(null);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (genderRef.current && !genderRef.current.contains(event.target)) {
@@ -90,10 +89,8 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
         })
       ).unwrap();
 
-      // Show verification modal after successful registration
       if (result.requiresVerification) {
         dispatch(showVerificationModal(result.email));
-        // Don't close modal or navigate - verification modal will show
       } else {
         toast.success("Account created successfully!");
         onClose();
@@ -125,12 +122,11 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="flex justify-center mb-2">
-          <div className="p-3 rounded-full bg-primary/10">
-            <Stethoscope className="h-6 w-6 text-primary" />
+          <div className="p-3 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+            <Stethoscope className="h-6 w-6 text-primary dark:text-primary" />
           </div>
         </div>
-       
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground dark:text-muted-foreground">
           Create an CareSync account
         </p>
       </div>
@@ -138,45 +134,45 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Username */}
         <div>
-          <Label htmlFor="userName" className="text-sm font-medium text-gray-700">Username</Label>
+          <Label htmlFor="userName" className="text-sm font-medium text-foreground dark:text-foreground">Username</Label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
             <Input
               id="userName"
               name="userName"
               placeholder="Enter Username"
               value={formData.userName}
               onChange={handleChange}
-              className="pl-9 h-10"
+              className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
             />
           </div>
           {errors.userName && (
-            <p className="text-xs text-red-600 mt-1">{errors.userName}</p>
+            <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.userName}</p>
           )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Full Name */}
           <div>
-            <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name</Label>
+            <Label htmlFor="fullName" className="text-sm font-medium text-foreground dark:text-foreground">Full Name</Label>
             <Input
               id="fullName"
               name="fullName"
               placeholder="Enter Fullname"
               value={formData.fullName}
               onChange={handleChange}
-              className="h-10"
+              className="h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
             />
             {errors.fullName && (
-              <p className="text-xs text-red-600 mt-1">{errors.fullName}</p>
+              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.fullName}</p>
             )}
           </div>
 
           {/* Email */}
           <div>
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+            <Label htmlFor="email" className="text-sm font-medium text-foreground dark:text-foreground">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
               <Input
                 id="email"
                 name="email"
@@ -184,19 +180,19 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                 placeholder="Enter Email"
                 value={formData.email}
                 onChange={handleChange}
-                className="pl-9 h-10"
+                className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
               />
             </div>
             {errors.email && (
-              <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.email}</p>
             )}
           </div>
 
           {/* Password */}
           <div>
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+            <Label htmlFor="password" className="text-sm font-medium text-foreground dark:text-foreground">Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
               <Input
                 id="password"
                 name="password"
@@ -204,19 +200,19 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                 placeholder="Enter Password"
                 value={formData.password}
                 onChange={handleChange}
-                className="pl-9 h-10"
+                className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
               />
             </div>
             {errors.password && (
-              <p className="text-xs text-red-600 mt-1">{errors.password}</p>
+              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.password}</p>
             )}
           </div>
 
           {/* Confirm Password */}
           <div>
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground dark:text-foreground">Confirm Password</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -224,31 +220,31 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="pl-9 h-10"
+                className="pl-9 h-10 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
               />
             </div>
             {errors.confirmPassword && (
-              <p className="text-xs text-red-600 mt-1">{errors.confirmPassword}</p>
+              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.confirmPassword}</p>
             )}
           </div>
 
           {/* Gender Dropdown */}
           <div>
-            <Label className="text-sm font-medium text-gray-700">Gender</Label>
+            <Label className="text-sm font-medium text-foreground dark:text-foreground">Gender</Label>
             <div className="relative" ref={genderRef}>
               <button
                 type="button"
                 onClick={() => setOpenGender(!openGender)}
-                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white text-left transition-all ${
-                  openGender ? 'border-primary ring-1 ring-primary' : 'border-gray-300'
-                } ${formData.gender ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white dark:bg-card text-left transition-all ${
+                  openGender ? 'border-primary ring-1 ring-primary dark:ring-primary/30' : 'border-border dark:border-border'
+                } ${formData.gender ? 'text-foreground dark:text-foreground' : 'text-muted-foreground dark:text-muted-foreground'}`}
               >
                 <span>{formData.gender || "Select gender"}</span>
                 <ChevronDown className={`h-4 w-4 transition-transform ${openGender ? 'rotate-180' : ''}`} />
               </button>
               
               {openGender && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-card border border-border dark:border-border rounded-md shadow-lg dark:shadow-xl max-h-60 overflow-y-auto">
                   {genders.map((gender) => (
                     <button
                       key={gender.value}
@@ -257,7 +253,7 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                         setFormData(prev => ({ ...prev, gender: gender.value }));
                         setOpenGender(false);
                       }}
-                      className="w-full px-3 py-2 text-left hover:bg-ring text-gray-700 transition-colors"
+                      className="w-full px-3 py-2 text-left hover:bg-muted dark:hover:bg-muted text-foreground dark:text-foreground transition-colors"
                     >
                       {gender.label}
                     </button>
@@ -266,20 +262,20 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               )}
             </div>
             {errors.gender && (
-              <p className="text-xs text-red-600 mt-1">{errors.gender}</p>
+              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.gender}</p>
             )}
           </div>
 
           {/* Role Dropdown */}
           <div>
-            <Label className="text-sm font-medium text-gray-700">I am a</Label>
+            <Label className="text-sm font-medium text-foreground dark:text-foreground">I am a</Label>
             <div className="relative" ref={roleRef}>
               <button
                 type="button"
                 onClick={() => setOpenRole(!openRole)}
-                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white text-left transition-all ${
-                  openRole ? 'border-primary ring-1 ring-primary' : 'border-gray-300'
-                } ${formData.role ? 'text-gray-900' : 'text-gray-500'}`}
+                className={`w-full flex items-center justify-between h-10 px-3 border rounded-md bg-white dark:bg-card text-left transition-all ${
+                  openRole ? 'border-primary ring-1 ring-primary dark:ring-primary/30' : 'border-border dark:border-border'
+                } ${formData.role ? 'text-foreground dark:text-foreground' : 'text-muted-foreground dark:text-muted-foreground'}`}
               >
                 <span className="flex items-center gap-2">
                   {formData.role ? (
@@ -293,7 +289,7 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               </button>
               
               {openRole && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-card border border-border dark:border-border rounded-md shadow-lg dark:shadow-xl max-h-60 overflow-y-auto">
                   {roles.map((role) => (
                     <button
                       key={role.value}
@@ -302,7 +298,7 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                         setFormData(prev => ({ ...prev, role: role.value }));
                         setOpenRole(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-ring text-gray-700 transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted dark:hover:bg-muted text-foreground dark:text-foreground transition-colors"
                     >
                       <role.icon className="h-4 w-4" />
                       {role.label}
@@ -312,18 +308,16 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               )}
             </div>
             {errors.role && (
-              <p className="text-xs text-red-600 mt-1">{errors.role}</p>
+              <p className="text-xs text-destructive dark:text-destructive mt-1">{errors.role}</p>
             )}
           </div>
         </div>
 
-       
-      
         {/* Submit */}
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-11 bg-primary hover:bg-primary/90 text-sm font-medium"
+          className="w-full h-11 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-primary-foreground dark:text-primary-foreground font-medium"
         >
           {loading ? (
             <>
@@ -338,11 +332,11 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
 
       {/* Footer */}
       <div className="text-center pt-2">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground dark:text-muted-foreground">
           Already have an account?{" "}
           <Button
             variant="link"
-            className="p-0 text-primary text-sm font-medium"
+            className="p-0 text-primary dark:text-primary text-sm font-medium hover:no-underline"
             onClick={switchToLogin}
           >
             Sign in

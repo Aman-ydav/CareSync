@@ -14,11 +14,10 @@ export default function AppRouter() {
   const location = useLocation();
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  // Check if current route is auth modal
+
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
 
-   useEffect(() => {
-    // Check if user is authenticated but not verified
+  useEffect(() => {
     if (isAuthenticated && user && !user.isVerified) {
       dispatch(showVerificationModal(user.email));
     }
@@ -26,30 +25,28 @@ export default function AppRouter() {
 
   return (
     <>
-
       <VerificationModal />
-      {/* Always render main routes */}
-      <Routes>
-        {/* Home route */}
-        <Route path="/" element={
-          <Layout showNavbar={true}>
-            <Home />
-          </Layout>
-        } />
-        
-        {/* Protected dashboard route */}
-        <Route path="/dashboard" element={
-          <Layout>
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          </Layout>
-        } />
-        
-        {/* Add other protected or public routes here */}
-      </Routes>
 
-      {/* Show auth modal on top when on auth routes */}
+      {/* Hide main <Routes> while on /login or /register */}
+      {!isAuthRoute && (
+        <Routes>
+          <Route path="/" element={
+            <Layout showNavbar={true}>
+              <Home />
+            </Layout>
+          } />
+
+          <Route path="/dashboard" element={
+            <Layout>
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            </Layout>
+          } />
+        </Routes>
+      )}
+
+      {/* Auth modal routes */}
       <Routes>
         <Route path="/login" element={
           <>
@@ -59,6 +56,7 @@ export default function AppRouter() {
             <AuthModal type="login" />
           </>
         } />
+
         <Route path="/register" element={
           <>
             <Layout showNavbar={true}>

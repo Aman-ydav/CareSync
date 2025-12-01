@@ -29,7 +29,7 @@ const Header = ({ onMenuToggle }) => {
     { path: '/dashboard', label: 'Dashboard' },
   ];
 
-  // ... existing code ...
+ 
 
   return (
     <motion.header

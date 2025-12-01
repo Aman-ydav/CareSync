@@ -37,9 +37,9 @@ const LoginForm = ({ switchToRegister, onClose }) => {
     if (!validateForm()) return;
 
     try {
-       await dispatch(
+      await dispatch(
         loginUser({
-          email: formData.email,  
+          email: formData.email,
           password: formData.password,
         })
       ).unwrap();
@@ -57,11 +57,11 @@ const LoginForm = ({ switchToRegister, onClose }) => {
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex justify-center mb-2">
-          <div className="p-3 rounded-full bg-primary/10">
-            <Stethoscope className="h-6 w-6 text-primary" />
+          <div className="p-3 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30">
+            <Stethoscope className="h-6 w-6 text-primary dark:text-primary" />
           </div>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Sign in to your CareSync account
         </p>
       </div>
@@ -69,9 +69,9 @@ const LoginForm = ({ switchToRegister, onClose }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email */}
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-foreground dark:text-foreground">Email</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
             <Input
               id="email"
               name="email"
@@ -79,19 +79,19 @@ const LoginForm = ({ switchToRegister, onClose }) => {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className="pl-9"
+              className="pl-9 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
             />
           </div>
           {errors.email && (
-            <p className="text-sm text-destructive mt-1">{errors.email}</p>
+            <p className="text-sm text-destructive dark:text-destructive mt-1">{errors.email}</p>
           )}
         </div>
 
         {/* Password */}
         <div>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-foreground dark:text-foreground">Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground h-4 w-4" />
             <Input
               id="password"
               name="password"
@@ -99,11 +99,11 @@ const LoginForm = ({ switchToRegister, onClose }) => {
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
-              className="pl-9"
+              className="pl-9 bg-white dark:bg-card border-border dark:border-border text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
             />
           </div>
           {errors.password && (
-            <p className="text-sm text-destructive mt-1">{errors.password}</p>
+            <p className="text-sm text-destructive dark:text-destructive mt-1">{errors.password}</p>
           )}
         </div>
 
@@ -111,7 +111,7 @@ const LoginForm = ({ switchToRegister, onClose }) => {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full medical-gradient"
+          className="w-full bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-primary-foreground dark:text-primary-foreground font-medium"
         >
           {loading ? (
             <>
@@ -126,15 +126,15 @@ const LoginForm = ({ switchToRegister, onClose }) => {
 
       {/* Footer */}
       <div className="text-center space-y-3">
-        <Button variant="link" className="text-sm text-primary">
+        <Button variant="link" className="text-sm text-primary dark:text-primary">
           Forgot your password?
         </Button>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground dark:text-muted-foreground">
           Don't have an account?{" "}
           <Button
             variant="link"
-            className="p-0 text-primary"
+            className="p-0 text-primary dark:text-primary hover:no-underline"
             onClick={switchToRegister}
           >
             Create one

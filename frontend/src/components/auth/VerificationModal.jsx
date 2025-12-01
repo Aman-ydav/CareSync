@@ -14,10 +14,9 @@ const VerificationModal = () => {
   const { showModal, email, verifying, resending } = verification;
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const [timer, setTimer] = useState(300); // 5 minutes
+  const [timer, setTimer] = useState(300);
   const [error, setError] = useState("");
 
-  // Auto-focus inputs
   const inputRefs = [
     useRef(null),
     useRef(null),
@@ -27,7 +26,6 @@ const VerificationModal = () => {
     useRef(null),
   ];
 
-  // Countdown timer
   useEffect(() => {
     let interval;
     if (showModal && timer > 0) {
@@ -38,28 +36,23 @@ const VerificationModal = () => {
     return () => clearInterval(interval);
   }, [showModal, timer]);
 
-  // Format timer
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Handle code input
   const handleCodeChange = (index, value) => {
-    // Only allow numbers
     if (!/^\d*$/.test(value)) return;
 
     const newCode = [...code];
-    newCode[index] = value.slice(-1); // Take only the last character
+    newCode[index] = value.slice(-1);
     setCode(newCode);
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs[index + 1].current?.focus();
     }
 
-    // Auto-submit if all digits are entered
     if (index === 5 && value) {
       const fullCode = newCode.join("");
       if (fullCode.length === 6) {
@@ -68,7 +61,6 @@ const VerificationModal = () => {
     }
   };
 
-  // Handle paste
   const handlePaste = (e) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData("text").trim();
@@ -76,21 +68,18 @@ const VerificationModal = () => {
       const digits = pasteData.split("");
       setCode(digits);
       
-      // Focus the last input
       setTimeout(() => {
         inputRefs[5].current?.focus();
       }, 10);
     }
   };
 
-  // Handle backspace
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs[index - 1].current?.focus();
     }
   };
 
-  // Handle verification
   const handleSubmit = async (verificationCode = null) => {
     const fullCode = verificationCode || code.join("");
     
@@ -106,17 +95,15 @@ const VerificationModal = () => {
       dispatch(hideVerificationModal());
     } catch (err) {
       setError(err || "Invalid verification code");
-      // Clear code on error
       setCode(["", "", "", "", "", ""]);
       inputRefs[0].current?.focus();
     }
   };
 
-  // Handle resend code
   const handleResend = async () => {
     try {
       await dispatch(resendVerificationCode(email)).unwrap();
-      setTimer(300); // Reset timer
+      setTimer(300);
       setCode(["", "", "", "", "", ""]);
       setError("");
       inputRefs[0].current?.focus();
@@ -125,7 +112,6 @@ const VerificationModal = () => {
     }
   };
 
-  // Close modal
   const handleClose = () => {
     dispatch(hideVerificationModal());
     setCode(["", "", "", "", "", ""]);
@@ -140,7 +126,7 @@ const VerificationModal = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm"
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
@@ -149,39 +135,39 @@ const VerificationModal = () => {
           className="relative w-full max-w-md mx-4"
         >
           {/* Modal Container */}
-          <div className="bg-white rounded-xl shadow-2xl p-6">
+          <div className="bg-white dark:bg-card rounded-xl shadow-2xl dark:shadow-2xl p-6 border border-border dark:border-border/50">
             {/* Close Button */}
             <button
               onClick={handleClose}
-              className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              className="absolute top-4 right-4 p-1 rounded-full hover:bg-muted dark:hover:bg-muted/50 transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-muted-foreground dark:text-muted-foreground" />
             </button>
 
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-                <Mail className="w-8 h-8 text-primary" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/20 mb-4 border border-primary/20 dark:border-primary/30">
+                <Mail className="w-8 h-8 text-primary dark:text-primary" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              <h2 className="text-2xl font-bold text-foreground dark:text-foreground mb-2">
                 Verify Your Email
               </h2>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 We sent a 6-digit code to{" "}
-                <span className="font-semibold text-primary">{email}</span>
+                <span className="font-semibold text-primary dark:text-primary">{email}</span>
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
                 Enter the code below to verify your account
               </p>
             </div>
 
             {/* Timer */}
             <div className="mb-6 text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
-                <AlertCircle className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted dark:bg-muted/50 rounded-full border border-border dark:border-border/50">
+                <AlertCircle className="w-4 h-4 text-muted-foreground dark:text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground dark:text-foreground">
                   Code expires in:{" "}
-                  <span className={timer < 60 ? "text-red-600" : "text-primary"}>
+                  <span className={timer < 60 ? "text-destructive dark:text-destructive" : "text-primary dark:text-primary"}>
                     {formatTime(timer)}
                   </span>
                 </span>
@@ -190,7 +176,7 @@ const VerificationModal = () => {
 
             {/* Code Inputs */}
             <div className="mb-6">
-              <Label className="block text-sm font-medium text-gray-700 mb-3">
+              <Label className="block text-sm font-medium text-foreground dark:text-foreground mb-3">
                 Enter 6-digit verification code
               </Label>
               <div className="flex justify-center gap-3" onPaste={handlePaste}>
@@ -204,13 +190,13 @@ const VerificationModal = () => {
                     value={digit}
                     onChange={(e) => handleCodeChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-14 text-center text-xl font-bold border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                    className="w-12 h-14 text-center text-xl font-bold border-2 border-border dark:border-border focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/30 transition-all bg-white dark:bg-card text-foreground dark:text-foreground"
                     disabled={verifying}
                   />
                 ))}
               </div>
               {error && (
-                <p className="mt-2 text-sm text-red-600 text-center">{error}</p>
+                <p className="mt-2 text-sm text-destructive dark:text-destructive text-center">{error}</p>
               )}
             </div>
 
@@ -219,7 +205,7 @@ const VerificationModal = () => {
               <Button
                 onClick={() => handleSubmit()}
                 disabled={verifying || code.join("").length !== 6}
-                className="w-full h-12 bg-primary hover:bg-primary/90"
+                className="w-full h-12 bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/80 text-primary-foreground dark:text-primary-foreground"
               >
                 {verifying ? (
                   <>
@@ -236,9 +222,9 @@ const VerificationModal = () => {
 
               <Button
                 onClick={handleResend}
-                disabled={resending || timer > 240} // Can resend after 1 minute
+                disabled={resending || timer > 240}
                 variant="outline"
-                className="w-full h-11"
+                className="w-full h-11 border-border dark:border-border text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted"
               >
                 {resending ? (
                   <>
@@ -257,8 +243,8 @@ const VerificationModal = () => {
             </div>
 
             {/* Footer */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500 text-center">
+            <div className="mt-6 pt-4 border-t border-border dark:border-border/50">
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground text-center">
                 Didn't receive the email? Check your spam folder or try resending the code.
                 <br />
                 The code will expire in 5 minutes.
