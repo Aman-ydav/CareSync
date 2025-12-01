@@ -1,34 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { motion, AnimatePresence } from 'framer-motion'
+import AppRouter from './router/AppRouter'
+import { fetchCurrentUser } from './features/auth/authSlice'
+import LoadingScreen from './components/layout/LoadingScreen'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const dispatch = useDispatch()
+  const { user } = useSelector((state) => state.auth)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      const token = localStorage.getItem('accessToken')
+      
+      if (token && !user) {
+        try {
+          await dispatch(fetchCurrentUser()).unwrap()
+        } catch (error) {
+          console.error('Failed to fetch user:', error)
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('user')
+        }
+      }
+      
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 1500)
+    }
+
+    initializeApp()
+  }, [dispatch, user])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-screen bg-background text-foreground">
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <LoadingScreen />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="app"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <AppRouter />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 

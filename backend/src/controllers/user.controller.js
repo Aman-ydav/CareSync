@@ -41,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
     fullName,
     email,
     password,
-    confirmePassword,
+    confirmPassword,
     role,
     phone,
     dob,
@@ -61,46 +61,29 @@ const registerUser = asyncHandler(async (req, res) => {
     emergencyContact,
   } = req.body;
 
-  if (
-    !userName ||
-    !fullName ||
-    !email ||
-    !password ||
-    !confirmePassword ||
-    !role
-  ) {
+  if (!userName || !fullName || !email || !password || !confirmPassword || !role) {
     cleanupLocalFiles(req.files);
     throw new ApiError(400, "Required fields missing");
   }
 
-  const emailRegex = /\S+@\S+\.\S+/;
-  if (!emailRegex.test(email)) throw new ApiError(400, "Invalid email format");
+  if (!/\S+@\S+\.\S+/.test(email)) throw new ApiError(400, "Invalid email format");
+  if (password !== confirmPassword) throw new ApiError(400, "Passwords do not match");
 
-  if (password !== confirmePassword) {
-    cleanupLocalFiles(req.files);
-    throw new ApiError(400, "Passwords do not match");
-  }
-
-  const existingUser = await User.findOne({
-    $or: [{ email }, { userName }],
-  });
+  const existingUser = await User.findOne({ $or: [{ email }, { userName }] });
   if (existingUser) throw new ApiError(409, "User already exists");
 
   let avatarUrl = "";
   if (req.file?.path) avatarUrl = req.file.path;
-
   const avatar = avatarUrl ? await uploadOnCloudinary(avatarUrl) : null;
 
-  const verificationCode = Math.floor(
-    100000 + Math.random() * 900000
-  ).toString();
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
   const newUser = await User.create({
     userName,
     fullName,
     email,
     password,
-    confirmePassword,
+    confirmPassword,
     role,
     phone,
     dob,
@@ -109,24 +92,22 @@ const registerUser = asyncHandler(async (req, res) => {
     avatar: avatar?.url,
     hospitalId,
     hospitalName,
-
     specialty,
     experienceYears,
     qualification,
     languagesSpoken,
     about,
     consultationHours,
-
     medicalHistory,
     bloodGroup,
     allergies,
     emergencyContact,
-
     isVerified: false,
     verificationCode,
     verificationCodeExpire: Date.now() + 10 * 60 * 1000,
   });
 
+  // Send verification email (Async)
   const html = `
     <div style="font-family:sans-serif;padding:20px;">
       <h3>CareSync Email Verification</h3>
@@ -135,14 +116,30 @@ const registerUser = asyncHandler(async (req, res) => {
       <p>This code expires in 10 minutes.</p>
     </div>
   `;
-
   await sendEmail(email, "Verify your CareSync account", html);
 
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(201, { email }, "Verification code sent to your email")
-    );
+  // Generate tokens
+  const { accessToken, refreshToken } =
+    await generateAccessAndRefreshToken(newUser._id);
+
+  // Remove sensitive fields before sending to frontend
+  const safeUser = await User.findById(newUser._id).select(
+    "-password -confirmPassword -refreshToken -verificationCode"
+  );
+
+  // Set refresh token cookie
+  res.cookie("refreshToken", refreshToken, cookieOptions);
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      {
+        user: safeUser,
+        accessToken,
+      },
+      "Registration successful. Verification code sent to your email."
+    )
+  );
 });
 
 const verifyEmail = asyncHandler(async (req, res) => {
@@ -201,7 +198,7 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const safeUser = await User.findById(user._id).select(
-    "-password -confirmePassword -refreshToken -verificationCode"
+    "-password -confirmPassword -refreshToken -verificationCode"
   );
 
   return res
@@ -271,7 +268,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   if (!isValid) throw new ApiError(401, "Old password is incorrect");
 
   user.password = newPassword;
-  user.confirmePassword = newPassword;
+  user.confirmPassword = newPassword;
 
   await user.save();
 
@@ -327,7 +324,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   if (!user) throw new ApiError(400, "Invalid or expired token");
 
   user.password = req.body.password;
-  user.confirmePassword = req.body.password;
+  user.confirmPassword = req.body.password;
 
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
@@ -341,7 +338,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 const getUserProfileById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select(
-    "-password -confirmePassword -refreshToken -verificationCode"
+    "-password -confirmPassword -refreshToken -verificationCode"
   );
 
   if (!user) throw new ApiError(404, "User not found");
@@ -380,7 +377,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     req.user._id,
     { $set: updateData },
     { new: true }
-  ).select("-password -confirmePassword -refreshToken");
+  ).select("-password -confirmPassword -refreshToken");
 
   if (!updatedUser) throw new ApiError(404, "User not found");
 
@@ -409,7 +406,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 
   const updatedUser = await User.findById(req.user._id).select(
-    "-password -confirmePassword -refreshToken"
+    "-password -confirmPassword -refreshToken"
   );
 
   res

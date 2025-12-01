@@ -1,0 +1,58 @@
+import { Router } from "express";
+import {
+  registerUser,
+  verifyEmail,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  getCurrentUser,
+  changeCurrentPassword,
+  forgotPassword,
+  resetPassword,
+  getUserProfileById,
+  updateAccountDetails,
+  updateUserAvatar,
+  deleteAccount
+} from "../controllers/user.controller.js";
+import { upload } from "../middlewares/multer.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+
+const router = Router();
+
+// Authentication routes
+router.route("/register").post(
+  upload.single("avatar"),
+  registerUser
+);
+
+router.route("/verify-email").post(verifyEmail);
+
+router.route("/login").post(loginUser);
+
+router.route("/logout").post(verifyJWT, logoutUser);
+
+router.route("/refresh-token").post(refreshAccessToken);
+
+// Password management
+router.route("/forgot-password").post(forgotPassword);
+
+router.route("/reset-password/:token").post(resetPassword);
+
+router.route("/change-password").post(verifyJWT, changeCurrentPassword);
+
+// User profile routes
+router.route("/current-user").get(verifyJWT, getCurrentUser);
+
+router.route("/profile/:id").get(verifyJWT, getUserProfileById);
+
+router.route("/update-account").patch(verifyJWT, updateAccountDetails);
+
+router.route("/update-avatar").patch(
+  verifyJWT,
+  upload.single("avatar"),
+  updateUserAvatar
+);
+
+router.route("/delete-account").delete(verifyJWT, deleteAccount);
+
+export default router;
