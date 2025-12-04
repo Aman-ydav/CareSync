@@ -1,5 +1,64 @@
 import mongoose from 'mongoose';
 
+const prescriptionSchema = new mongoose.Schema({
+  medicine: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  dosage: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  frequency: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  duration: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  instructions: {
+    type: String,
+    trim: true
+  }
+}, { _id: true });
+
+const vitalSignsSchema = new mongoose.Schema({
+  bloodPressure: {
+    type: String,
+    trim: true
+  },
+  heartRate: {
+    type: Number,
+    min: 0
+  },
+  temperature: {
+    type: Number,
+    min: 0
+  },
+  oxygenSaturation: {
+    type: Number,
+    min: 0,
+    max: 100
+  },
+  weight: {
+    type: Number,
+    min: 0
+  },
+  height: {
+    type: Number,
+    min: 0
+  },
+  bmi: {
+    type: Number,
+    min: 0
+  }
+});
+
 const healthRecordSchema = new mongoose.Schema({
   patient: {
     type: mongoose.Schema.Types.ObjectId,
@@ -11,37 +70,50 @@ const healthRecordSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  hospital: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hospital'
+  },
   diagnosis: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  prescriptions: [{
-    medicine: String,
-    dosage: String,
-    frequency: String,
-    duration: String
-  }],
+  prescriptions: [prescriptionSchema],
   notes: {
-    type: String
+    type: String,
+    trim: true
   },
   visitDate: {
     type: Date,
-    required: true
+    required: true,
+    default: Date.now
   },
   fileUrls: [{
-    type: String
+    url: String,
+    fileName: String,
+    fileType: String,
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
   }],
-  vitalSigns: {
-    bloodPressure: String,
-    heartRate: Number,
-    temperature: Number,
-    oxygenSaturation: Number
-  },
+  vitalSigns: vitalSignsSchema,
   followUpDate: {
     type: Date
+  },
+  status: {
+    type: String,
+    enum: ['Active', 'Archived', 'Deleted'],
+    default: 'Active'
   }
 }, {
   timestamps: true
 });
 
-module.exports = mongoose.model('HealthRecord', healthRecordSchema);
+healthRecordSchema.index({ patient: 1, visitDate: -1 });
+healthRecordSchema.index({ doctor: 1, visitDate: -1 });
+healthRecordSchema.index({ hospital: 1 });
+healthRecordSchema.index({ status: 1 });
+
+export const HealthRecord = mongoose.model('HealthRecord', healthRecordSchema);

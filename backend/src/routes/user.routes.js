@@ -14,6 +14,7 @@ import {
   updateUserAvatar,
   deleteAccount,
   resendVerificationCode,
+  getDoctorsByHospital,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -57,5 +58,12 @@ router.route("/update-avatar").patch(
 );
 
 router.route("/delete-account").delete(verifyJWT, deleteAccount);
+
+
+
+router.get("/doctors", getDoctorsByHospital);
+
+
+
 
 export default router;

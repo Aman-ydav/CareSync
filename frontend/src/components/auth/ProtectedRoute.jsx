@@ -1,33 +1,28 @@
-// src/components/ProtectedRoute.jsx
-import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import VerificationModal from './VerificationModal';
+import { Navigate, useLocation } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
-const ProtectedRoute = ({ children }) => {
-  const { user, isAuthenticated, verification } = useSelector((state) => state.auth);
-  const navigate = useNavigate();
+const ProtectedRoute = ({ children, roles = [] }) => {
+  const { user, isAuthenticated } = useSelector((state) => state.auth)
+  const location = useLocation()
 
-  useEffect(() => {
-    // If not authenticated, redirect to login
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  // If roles are specified, check if user has required role
+  if (roles.length > 0 && user && !roles.includes(user.role)) {
+    // Redirect based on user role
+    if (user.role === 'DOCTOR') {
+      return <Navigate to="/dashboard" replace />
+    } else if (user.role === 'PATIENT') {
+      return <Navigate to="/dashboard" replace />
+    } else if (user.role === 'ADMIN') {
+      return <Navigate to="/dashboard" replace />
     }
+    return <Navigate to="/unauthorized" replace />
+  }
 
-    // If authenticated but not verified, ensure modal is shown
-    // This handles cases where user reloads page or comes back
-    if (user && !user.isVerified && !verification.showModal) {
-      // We'll handle this with a separate effect or component
-    }
-  }, [isAuthenticated, user, navigate, verification.showModal]);
+  return children
+}
 
-  return (
-    <>
-      {children}
-      <VerificationModal />
-    </>
-  );
-};
-
-export default ProtectedRoute;
+export default ProtectedRoute

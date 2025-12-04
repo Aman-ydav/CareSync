@@ -5,22 +5,20 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { store } from './store'
 import App from './App'
-import ThemeProvider from './components/theme/ThemeProvider'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
     <Provider store={store}>
-      <BrowserRouter basename="/">
-        <ThemeProvider>
-          <App />
-          <Toaster 
-            position="top-right"
-            duration={4000}
-            richColors
-            closeButton
-          />
-        </ThemeProvider>
+      <BrowserRouter>
+        <App />
+        <Toaster 
+          position="top-right"
+          duration={4000}
+          richColors
+          closeButton
+        />
       </BrowserRouter>
     </Provider>
-  
+  </React.StrictMode>
 )

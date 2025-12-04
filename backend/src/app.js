@@ -4,8 +4,12 @@ import cookieParser from "cookie-parser";
 import "./config.js";
 import { ApiError } from "./utils/apiError.js";
 
-// Import routes
+// Import all routes
 import userRoutes from "./routes/user.routes.js";
+import hospitalRoutes from "./routes/hospital.routes.js";
+import healthRecordRoutes from "./routes/healthRecord.routes.js";
+import appointmentRoutes from "./routes/appointment.routes.js";
+import aiChatRoutes from "./routes/aiChat.routes.js";
 
 const app = express();
 
@@ -17,9 +21,10 @@ const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
         console.log(`[CORS] Allowed: ${origin}`);
         return callback(null, true);
       }
@@ -53,17 +58,18 @@ app.get("/api/v1/health", (req, res) => {
     success: true,
     message: "Caresync backend is live!",
     timestamp: new Date().toISOString(),
+    version: "1.0.0"
   });
 });
 
 // API routes
 app.use("/api/v1/users", userRoutes);
-// Add more routes here as you create them
-// Example: app.use("/api/v1/doctors", doctorRoutes);
-// Example: app.use("/api/v1/patients", patientRoutes);
-// Example: app.use("/api/v1/appointments", appointmentRoutes);
+app.use("/api/v1/hospitals", hospitalRoutes);
+app.use("/api/v1/health-records", healthRecordRoutes);
+app.use("/api/v1/appointments", appointmentRoutes);
+app.use("/api/v1/ai-chat", aiChatRoutes);
 
-// 404 handler
+// 404 handler for API routes
 app.use((req, res, next) => {
   return res.status(404).json({
     success: false,
@@ -87,5 +93,4 @@ app.use((err, req, res, next) => {
     message: err.message || "Server Error",
   });
 });
-
 export { app };

@@ -32,3 +32,18 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         throw new ApiError(401, "Invalid access token");
     }
 });
+
+// Add this function to your auth.middleware.js
+export const verifyRole = (roles = []) => {
+  return asyncHandler(async (req, res, next) => {
+    if (!req.user) {
+      throw new ApiError(401, "Authentication required");
+    }
+
+    if (!roles.includes(req.user.role)) {
+      throw new ApiError(403, "You don't have permission to access this resource");
+    }
+
+    next();
+  });
+};

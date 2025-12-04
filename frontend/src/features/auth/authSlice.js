@@ -185,16 +185,19 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// Fix the getCurrentUser endpoint
 export const fetchCurrentUser = createAsyncThunk(
   "auth/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/users/me", { withCredentials: true });
-      const user = response.data.data?.user || response.data.data;
-
+      // CORRECT ENDPOINT: /users/current-user NOT /users/me
+      const response = await api.get("/users/current-user", { withCredentials: true });
+      const user = response.data.data;
+      
       localStorage.setItem("user", JSON.stringify(user));
       return user;
     } catch (error) {
+      console.error("Fetch user error:", error);
       return rejectWithValue("Failed to fetch user");
     }
   }

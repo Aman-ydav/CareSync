@@ -1,82 +1,116 @@
-// import statements
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import ChatMessage from '../models/ChatMessage.js';
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { ChatMessage } from "../models/ChatMessage.model.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize AI model
 const genAI = new GoogleGenerativeAI(process.env.GENAI_API_KEY);
 const model = genAI.getGenerativeModel({ 
   model: process.env.GENAI_MODEL || "gemini-pro" 
 });
 
-// Medical disclaimer constant
-const MEDICAL_DISCLAIMER = "Disclaimer: This is not medical advice. Consult your doctor for professional guidance.\n\n";
+const chatWithAI = asyncHandler(async (req, res) => {
+  const { message, sessionId = 'default' } = req.body;
+  const userId = req.user?._id;
 
-// Fallback response
-const FALLBACK_RESPONSE = `${MEDICAL_DISCLAIMER}I apologize, but I'm currently experiencing technical difficulties. Please try again later or contact your healthcare provider directly for assistance.`;
+  if (!message || message.trim() === '') {
+    throw new ApiError(400, 'Message is required');
+  }
 
-// Prompt template
-const createMedicalPrompt = (userMessage) => {
-  return `You are a helpful medical assistant. The user asked: "${userMessage}"
-    
-Please provide helpful information but always remember to:
-1. Not give medical diagnoses
-2. Encourage consulting healthcare professionals
-3. Provide general health information only
-4. Be empathetic and supportive
+  // Medical disclaimer
+  const disclaimer = "**Disclaimer:** I am an AI assistant and cannot provide medical diagnoses. My responses are for informational purposes only. Always consult with qualified healthcare professionals for medical advice, diagnosis, or treatment.\n\n";
 
-Response:`;
-};
+  // Create medical context
+  const prompt = `You are a helpful medical assistant named CareSync AI. You provide general health information, wellness tips, and explain medical concepts in simple terms.
 
-// Main chat function
-export const chatWithAI = async (req, res) => {
+IMPORTANT RULES:
+1. NEVER provide medical diagnoses
+2. NEVER prescribe medications
+3. ALWAYS advise users to consult healthcare professionals
+4. Provide accurate, evidence-based information
+5. Be empathetic and supportive
+6. If unsure, say "I recommend consulting a healthcare professional"
+
+User's message: "${message}"
+
+Provide a helpful, informative response:`;
+
   try {
-    const { message, sessionId } = req.body;
-    const userId = req.user?._id;
-
-    if (!message) {
-      return res.status(400).json({ message: 'Message is required' });
-    }
-
-    const prompt = createMedicalPrompt(message);
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let aiResponse = response.text();
-
-    // Ensure disclaimer is included
-    if (!aiResponse.includes('Disclaimer')) {
-      aiResponse = MEDICAL_DISCLAIMER + aiResponse;
+    let aiResponse = disclaimer;
+    
+    // Handle different response formats from Gemini
+    if (result && result.response) {
+      const text = result.response.text();
+      aiResponse += text;
+    } else if (result && result.candidates && result.candidates[0]) {
+      aiResponse += result.candidates[0].content.parts[0].text;
+    } else {
+      throw new Error('Invalid response from AI');
     }
 
     // Save chat message if user is authenticated
     if (userId) {
       await ChatMessage.create({
         user: userId,
-        message,
+        message: message.trim(),
         response: aiResponse,
-        sessionId: sessionId || 'default'
+        sessionId,
+        metadata: {
+          timestamp: new Date(),
+          model: process.env.GENAI_MODEL || "gemini-pro"
+        }
       });
     }
 
-    res.json({ response: aiResponse });
+    return res.status(200).json(
+      new ApiResponse(200, { response: aiResponse }, "AI response generated successfully")
+    );
   } catch (error) {
     console.error('AI Chat error:', error);
     
-    res.json({ response: FALLBACK_RESPONSE });
-  }
-};
+    // Fallback response
+    const fallbackResponse = "**Disclaimer:** This is not medical advice. Consult your doctor for professional guidance.\n\nI apologize, but I'm currently experiencing technical difficulties. Please try again later or contact your healthcare provider directly for assistance.";
 
-// Get chat history
-export const getChatHistory = async (req, res) => {
-  try {
-    const { sessionId = 'default' } = req.query;
-    const messages = await ChatMessage.find({
-      user: req.user._id,
-      sessionId
-    }).sort({ createdAt: 1 });
-
-    res.json(messages);
-  } catch (error) {
-    console.error('Get chat history error:', error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(200).json(
+      new ApiResponse(200, { response: fallbackResponse }, "Generated fallback response")
+    );
   }
+});
+
+const getChatHistory = asyncHandler(async (req, res) => {
+  const { sessionId = 'default', limit = 50 } = req.query;
+  const userId = req.user._id;
+
+  const messages = await ChatMessage.find({
+    user: userId,
+    sessionId
+  })
+    .sort({ createdAt: -1 })
+    .limit(parseInt(limit))
+    .select('message response createdAt');
+
+  return res.status(200).json(
+    new ApiResponse(200, { messages }, "Chat history fetched successfully")
+  );
+});
+
+const clearChatHistory = asyncHandler(async (req, res) => {
+  const { sessionId } = req.query;
+  const userId = req.user._id;
+
+  const filter = { user: userId };
+  if (sessionId) filter.sessionId = sessionId;
+
+  await ChatMessage.deleteMany(filter);
+
+  return res.status(200).json(
+    new ApiResponse(200, null, "Chat history cleared successfully")
+  );
+});
+
+export {
+  chatWithAI,
+  getChatHistory,
+  clearChatHistory
 };
