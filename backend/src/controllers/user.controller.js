@@ -3,6 +3,7 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
 import { cleanupLocalFiles } from "../utils/fileCleanUp.js";
+import mongoose from "mongoose";
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
@@ -545,6 +546,24 @@ const deleteAccount = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Account deleted successfully"));
 });
 
+
+const getDoctorsByHospital = asyncHandler(async (req, res) => {
+  const { hospitalId } = req.query;
+  if (!hospitalId) {
+    throw new ApiError(400, "hospitalId required");
+  }
+
+  const doctors = await User.find({
+    role: "DOCTOR",
+  }).select("fullName specialty avatar hospitalId");
+
+  return res.status(200).json(
+    new ApiResponse(200, doctors, "Doctors fetched")
+  );
+});
+
+
+
 export {
   registerUser,
   verifyEmail,
@@ -560,4 +579,5 @@ export {
   updateUserAvatar,
   deleteAccount,
   resendVerificationCode,
+  getDoctorsByHospital,
 };
