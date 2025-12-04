@@ -5,7 +5,7 @@ import { HealthRecord } from "../models/HealthRecord.model.js";
 import { User } from "../models/user.model.js"; 
 
 const getHealthRecords = asyncHandler(async (req, res) => {
-  const { patientId, doctorId, hospitalId, startDate, endDate, status } = req.query;
+  const { patientId, doctorId, startDate, endDate, status } = req.query;
   const { role, _id: userId } = req.user;
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 20;
@@ -23,7 +23,6 @@ const getHealthRecords = asyncHandler(async (req, res) => {
   // Additional filters
   if (patientId) filter.patient = patientId;
   if (doctorId) filter.doctor = doctorId;
-  if (hospitalId) filter.hospital = hospitalId;
   if (status) filter.status = status;
 
   // Date range filtering
@@ -37,7 +36,6 @@ const getHealthRecords = asyncHandler(async (req, res) => {
     HealthRecord.find(filter)
       .populate('patient', 'fullName avatar dob gender bloodGroup')
       .populate('doctor', 'fullName avatar specialty qualification')
-      .populate('hospital', 'name city state')
       .sort({ visitDate: -1 })
       .skip(skip)
       .limit(limit),
@@ -66,7 +64,6 @@ const getHealthRecordById = asyncHandler(async (req, res) => {
   const record = await HealthRecord.findById(id)
     .populate('patient', 'fullName avatar dob gender bloodGroup allergies emergencyContact')
     .populate('doctor', 'fullName avatar specialty qualification languagesSpoken')
-    .populate('hospital', 'name city state address phone');
 
   if (!record) {
     throw new ApiError(404, "Health record not found");
@@ -90,7 +87,6 @@ const createHealthRecord = asyncHandler(async (req, res) => {
   const {
     patient,
     doctor,
-    hospital,
     diagnosis,
     prescriptions,
     notes,
@@ -119,11 +115,10 @@ const createHealthRecord = asyncHandler(async (req, res) => {
   const healthRecord = await HealthRecord.create({
     patient,
     doctor: req.user.role === 'DOCTOR' ? req.user._id : doctor,
-    hospital: hospital || req.user.hospitalId,
     diagnosis,
     prescriptions: prescriptions || [],
     notes,
-    visitDate: visitDate || Date.now(),
+    visitDate: visitDate ? new Date(visitDate) : Date.now(),
     vitalSigns,
     followUpDate
   });
@@ -132,7 +127,6 @@ const createHealthRecord = asyncHandler(async (req, res) => {
   const populatedRecord = await HealthRecord.findById(healthRecord._id)
     .populate('patient', 'fullName avatar')
     .populate('doctor', 'fullName avatar specialty')
-    .populate('hospital', 'name');
 
   return res.status(201).json(
     new ApiResponse(201, populatedRecord, "Health record created successfully")
@@ -166,7 +160,6 @@ const updateHealthRecord = asyncHandler(async (req, res) => {
   const updatedRecord = await HealthRecord.findById(record._id)
     .populate('patient', 'fullName avatar')
     .populate('doctor', 'fullName avatar specialty')
-    .populate('hospital', 'name');
 
   return res.status(200).json(
     new ApiResponse(200, updatedRecord, "Health record updated successfully")

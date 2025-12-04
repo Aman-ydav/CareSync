@@ -68,15 +68,6 @@ const userSchema = new Schema(
       zipCode: { type: String },
     },
 
-    hospitalId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Hospital",
-    },
-
-    hospitalName: {
-      type: String,
-    },
-
     // Doctor-specific fields
     specialty: {
       type: String,

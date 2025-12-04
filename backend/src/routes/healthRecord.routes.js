@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express from "express";
 import {
   getHealthRecords,
   getHealthRecordById,
@@ -6,20 +6,40 @@ import {
   updateHealthRecord,
   deleteHealthRecord
 } from "../controllers/healthRecord.controller.js";
-import { verifyJWT, verifyRole } from "../middlewares/auth.middleware.js";
 
-const router = Router();
+import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { allowRoles } from "../middlewares/roleCheck.middleware.js";
 
-// All routes require authentication
-router.use(verifyJWT);
+const router = express.Router();
 
-router.route("/")
-  .get(getHealthRecords)
-  .post(verifyRole(['DOCTOR', 'ADMIN']), createHealthRecord);
+// GET all health records
+router.get("/", verifyJWT, getHealthRecords);
 
-router.route("/:id")
-  .get(getHealthRecordById)
-  .patch(verifyRole(['DOCTOR', 'ADMIN']), updateHealthRecord)
-  .delete(verifyRole(['DOCTOR', 'ADMIN']), deleteHealthRecord);
+// GET single record by ID
+router.get("/:id", verifyJWT, getHealthRecordById);
+
+// CREATE new record (Admin + Doctor)
+router.post(
+  "/",
+  verifyJWT,
+  allowRoles("ADMIN", "DOCTOR"),
+  createHealthRecord
+);
+
+// UPDATE record (Admin + Doctor)
+router.patch(
+  "/:id",
+  verifyJWT,
+  allowRoles("ADMIN", "DOCTOR"),
+  updateHealthRecord
+);
+
+// DELETE (Soft delete) record (Admin + Doctor)
+router.delete(
+  "/:id",
+  verifyJWT,
+  allowRoles("ADMIN", "DOCTOR"),
+  deleteHealthRecord
+);
 
 export default router;

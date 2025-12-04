@@ -5,63 +5,81 @@ import { Appointment } from "../models/Appointment.model.js";
 import { User } from "../models/user.model.js";
 
 const getAppointments = asyncHandler(async (req, res) => {
-  const { 
-    status, 
-    startDate, 
-    endDate, 
-    consultationType,
-    hospitalId 
-  } = req.query;
-  
+  // if no user found from JWT middleware
+  if (!req.user) {
+    return res
+      .status(401)
+      .json(new ApiResponse(401, null, "Unauthorized"));
+  }
+
   const { role, _id: userId } = req.user;
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 20;
+  const {
+    status,
+    startDate,
+    endDate,
+    consultationType,
+    page = 1,
+    limit = 20,
+  } = req.query;
+
   const skip = (page - 1) * limit;
 
   let filter = {};
 
-  // Role-based filtering
-  if (role === 'DOCTOR') {
+  // Role-based access
+  if (role === "DOCTOR") {
     filter.doctor = userId;
-  } else if (role === 'PATIENT') {
+  }
+  if (role === "PATIENT") {
     filter.patient = userId;
   }
+  // admin sees all (no filter)
 
-  // Additional filters
-  if (status) filter.status = status;
-  if (consultationType) filter.consultationType = consultationType;
-  if (hospitalId) filter.hospital = hospitalId;
+  // Basic filters
+  if (status) {
+    filter.status = status;
+  }
+  if (consultationType) {
+    filter.consultationType = consultationType;
+  }
 
-  // Date range filtering
+  // Date filter
   if (startDate || endDate) {
     filter.date = {};
-    if (startDate) filter.date.$gte = new Date(startDate);
-    if (endDate) filter.date.$lte = new Date(endDate);
+    if (startDate) {
+      filter.date.$gte = new Date(startDate);
+    }
+    if (endDate) {
+      filter.date.$lte = new Date(endDate);
+    }
   }
 
   const [appointments, total] = await Promise.all([
     Appointment.find(filter)
-      .populate('doctor', 'fullName avatar specialty qualification')
-      .populate('patient', 'fullName avatar dob gender bloodGroup')
-      .populate('hospital', 'name city')
+      .populate("doctor", "fullName avatar specialty qualification")
+      .populate("patient", "fullName avatar dob gender bloodGroup")
       .sort({ date: 1, time: 1 })
-      .skip(skip)
-      .limit(limit),
-    Appointment.countDocuments(filter)
+      .skip(Number(skip))
+      .limit(Number(limit)),
+    Appointment.countDocuments(filter),
   ]);
 
   return res.status(200).json(
-    new ApiResponse(200, {
-      appointments,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
-        hasPrev: page > 1
-      }
-    }, "Appointments fetched successfully")
+    new ApiResponse(
+      200,
+      {
+        appointments,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          pages: Math.ceil(total / limit),
+          hasNext: page * limit < total,
+          hasPrev: page > 1,
+        },
+      },
+      "Appointments fetched successfully"
+    )
   );
 });
 
@@ -72,7 +90,6 @@ const getAppointmentById = asyncHandler(async (req, res) => {
   const appointment = await Appointment.findById(id)
     .populate('doctor', 'fullName avatar specialty qualification languagesSpoken consultationHours')
     .populate('patient', 'fullName avatar dob gender bloodGroup allergies emergencyContact')
-    .populate('hospital', 'name city state address phone');
 
   if (!appointment) {
     throw new ApiError(404, "Appointment not found");
@@ -96,7 +113,6 @@ const createAppointment = asyncHandler(async (req, res) => {
   const {
     doctor,
     patient,
-    hospital,
     date,
     time,
     reason,
@@ -106,7 +122,7 @@ const createAppointment = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (!doctor || !patient || !hospital || !date || !time || !reason) {
+  if (!doctor || !patient || !date || !time || !reason) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
@@ -157,8 +173,6 @@ const createAppointment = asyncHandler(async (req, res) => {
   const appointment = await Appointment.create({
     doctor,
     patient,
-    hospital,
-    hospitalName: req.body.hospitalName || 'Hospital',
     date: appointmentDate,
     time: appointmentTime,
     reason,
@@ -171,7 +185,6 @@ const createAppointment = asyncHandler(async (req, res) => {
   const populatedAppointment = await Appointment.findById(appointment._id)
     .populate('doctor', 'fullName avatar specialty')
     .populate('patient', 'fullName avatar')
-    .populate('hospital', 'name');
 
   return res.status(201).json(
     new ApiResponse(201, populatedAppointment, "Appointment created successfully")
@@ -226,7 +239,6 @@ const updateAppointment = asyncHandler(async (req, res) => {
   const updatedAppointment = await Appointment.findById(appointment._id)
     .populate('doctor', 'fullName avatar specialty')
     .populate('patient', 'fullName avatar')
-    .populate('hospital', 'name');
 
   return res.status(200).json(
     new ApiResponse(200, updatedAppointment, "Appointment updated successfully")

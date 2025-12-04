@@ -6,10 +6,11 @@ import { ApiError } from "./utils/apiError.js";
 
 // Import all routes
 import userRoutes from "./routes/user.routes.js";
-import hospitalRoutes from "./routes/hospital.routes.js";
+// import hospitalRoutes from "./routes/hospital.routes.js";
 import healthRecordRoutes from "./routes/healthRecord.routes.js";
 import appointmentRoutes from "./routes/appointment.routes.js";
 import aiChatRoutes from "./routes/aiChat.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
@@ -64,10 +65,12 @@ app.get("/api/v1/health", (req, res) => {
 
 // API routes
 app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/hospitals", hospitalRoutes);
+// app.use("/api/v1/hospitals", hospitalRoutes);
 app.use("/api/v1/health-records", healthRecordRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/v1/ai-chat", aiChatRoutes);
+app.use("/api/v1/admin", adminRoutes);
+
 
 // 404 handler for API routes
 app.use((req, res, next) => {

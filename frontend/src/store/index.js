@@ -1,18 +1,18 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/features/auth/authSlice";
+import appointmentsReducer from "@/features/appointments/appointmentSlice";
+import healthRecordsReducer from "@/features/healthRecords/healthRecordSlice";
+import aiChatReducer from "@/features/aiChat/aiChatSlice";
+import adminReducer from "@/features/admin/adminSlice";
 import themeReducer from "@/features/theme/themeSlice";
-import appointmentReducer from "@/features/appointments/appointmentSlice";
-import healthRecordReducer from "@/features/health-records/healthRecordSlice";
-import hospitalReducer from "@/features/hospitals/hospitalSlice";
-import aiChatReducer from "@/features/ai-chat/aiChatSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    theme: themeReducer,
-    appointments: appointmentReducer,
-    healthRecords: healthRecordReducer,
-    hospitals: hospitalReducer,
+    appointments: appointmentsReducer,
+    healthRecords: healthRecordsReducer,
     aiChat: aiChatReducer,
+    admin: adminReducer,
+    theme: themeReducer,
   },
 });

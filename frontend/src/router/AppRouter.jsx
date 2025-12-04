@@ -1,41 +1,44 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import Home from "@/pages/home/Home";
-import Dashboard from "@/pages/dashboard/Dashboard";
-import Appointments from "@/pages/appointments/Appointments";
-import CreateAppointment from "@/pages/appointments/CreateAppointment";
-import AppointmentDetails from "@/pages/appointments/AppointmentDetails";
-import HealthRecords from "@/pages/health-records/HealthRecords";
-import CreateHealthRecord from "@/pages/health-records/CreateHealthRecord";
-import HealthRecordDetails from "@/pages/health-records/HealthRecordDetails";
-import Hospitals from "@/pages/hospitals/Hospitals";
-import AIChat from "@/pages/ai-chat/AIChat";
-import Profile from "@/pages/profile/Profile";
-import Settings from "@/pages/settings/Settings";
 import AuthModal from "@/components/auth/AuthModal";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import CreateHospital from "@/pages/hospitals/CreateHospital";
-import HospitalDetails from "@/pages/hospitals/HospitalDetails";
+
+import AdminDashboard from "@/pages/dashboard/AdminDashboard";
+import DoctorDashboard from "@/pages/dashboard/DoctorDashboard";
+import PatientDashboard from "@/pages/dashboard/PatientDashboard";
+
+import AppointmentsPage from "@/pages/appointments/AppointmentsPage";
+import HealthRecordsPage from "@/pages/records/HealthRecordsPage";
+import AiAssistantPage from "@/pages/ai/AiAssistantPage";
+import NewAppointmentPage from "@/pages/appointments/NewAppointmentPage";
+
+import { useSelector } from "react-redux";
+import HealthRecordCreatePage from "@/pages/records/HealthRecordCreatePage";
+import AppointmentDetailsPage from "@/pages/appointments/AppointmentDetailsPage";
+import HealthRecordDetailsPage from "@/pages/records/HealthRecordDetailsPage";
 
 export default function AppRouter() {
   const location = useLocation();
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const hasCheckedVerification = useRef(false);
+  const { user } = useSelector((state) => state.auth);
 
   const isAuthRoute =
     location.pathname === "/login" || location.pathname === "/register";
 
-  useEffect(() => {
-    if (!user) hasCheckedVerification.current = false;
-  }, [user]);
+  // default redirect based on role
+  const defaultDashboard = () => {
+    if (!user) return "/login";
+    if (user.role === "ADMIN") return "/dashboard/admin";
+    if (user.role === "DOCTOR") return "/dashboard/doctor";
+    return "/dashboard/patient";
+  };
 
   return (
     <>
-      {/* MAIN ROUTES */}
+      {/* PUBLIC / MAIN ROUTES */}
       {!isAuthRoute && (
         <Routes location={location}>
+          {/* Home */}
           <Route
             path="/"
             element={
@@ -44,22 +47,58 @@ export default function AppRouter() {
               </Layout>
             }
           />
+
+          {/* Middle redirect when someone opens /dashboard */}
           <Route
             path="/dashboard"
             element={
+              <ProtectedRoute>
+                <Navigate to={defaultDashboard()} replace />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ROLE-WISE DASHBOARDS */}
+          <Route
+            path="/dashboard/admin"
+            element={
               <Layout>
-                <ProtectedRoute>
-                  <Dashboard />
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <AdminDashboard />
                 </ProtectedRoute>
               </Layout>
             }
           />
+
+          <Route
+            path="/dashboard/doctor"
+            element={
+              <Layout>
+                <ProtectedRoute roles={["DOCTOR"]}>
+                  <DoctorDashboard />
+                </ProtectedRoute>
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/dashboard/patient"
+            element={
+              <Layout>
+                <ProtectedRoute roles={["PATIENT"]}>
+                  <PatientDashboard />
+                </ProtectedRoute>
+              </Layout>
+            }
+          />
+
+          {/* SHARED PAGES */}
           <Route
             path="/appointments"
             element={
               <Layout>
-                <ProtectedRoute>
-                  <Appointments />
+                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+                  <AppointmentsPage />
                 </ProtectedRoute>
               </Layout>
             }
@@ -69,8 +108,8 @@ export default function AppRouter() {
             path="/appointments/new"
             element={
               <Layout>
-                <ProtectedRoute>
-                  <CreateAppointment />
+                <ProtectedRoute roles={["PATIENT"]}>
+                  <NewAppointmentPage />
                 </ProtectedRoute>
               </Layout>
             }
@@ -80,110 +119,65 @@ export default function AppRouter() {
             path="/appointments/:id"
             element={
               <Layout>
-                <ProtectedRoute>
-                  <AppointmentDetails />
+                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+                  <AppointmentDetailsPage />
                 </ProtectedRoute>
               </Layout>
             }
           />
 
           <Route
-            path="/health-records"
+            path="/records"
             element={
               <Layout>
-                <ProtectedRoute>
-                  <HealthRecords />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
-          <Route
-            path="/health-records/new"
-            element={
-              <Layout>
-                <ProtectedRoute>
-                  <CreateHealthRecord />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
-          <Route
-            path="/health-records/:id"
-            element={
-              <Layout>
-                <ProtectedRoute>
-                  <HealthRecordDetails />
+                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+                  <HealthRecordsPage />
                 </ProtectedRoute>
               </Layout>
             }
           />
 
           <Route
-            path="/hospitals"
+            path="/records/new"
             element={
               <Layout>
-                <ProtectedRoute>
-                  <Hospitals />
+                <ProtectedRoute roles={["ADMIN", "DOCTOR"]}>
+                  <HealthRecordCreatePage />
                 </ProtectedRoute>
               </Layout>
             }
           />
+
           <Route
-            path="/hospitals/new"
+            path="/records/:id"
             element={
               <Layout>
-                <ProtectedRoute adminOnly>
-                  <CreateHospital />
+                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+                  <HealthRecordDetailsPage />
                 </ProtectedRoute>
               </Layout>
             }
           />
+
           <Route
-            path="/hospitals/:id"
+            path="/ai-assistant"
             element={
               <Layout>
-                <ProtectedRoute>
-                  <HospitalDetails />
+                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+                  <AiAssistantPage />
                 </ProtectedRoute>
               </Layout>
             }
           />
-          <Route
-            path="/ai-chat"
-            element={
-              <Layout>
-                <ProtectedRoute>
-                  <AIChat />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <Layout>
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <Layout>
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       )}
 
-      {/* AUTH ROUTES */}
+      {/* AUTH MODAL ROUTES */}
       {isAuthRoute && (
-        <Routes key={"auth-modal"}>
+        <Routes>
           <Route
             path="/login"
             element={

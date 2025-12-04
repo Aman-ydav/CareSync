@@ -48,8 +48,6 @@ const registerUser = asyncHandler(async (req, res) => {
     dob,
     gender,
     address,
-    hospitalId,
-    hospitalName,
     specialty,
     experienceYears,
     qualification,
@@ -102,8 +100,6 @@ const registerUser = asyncHandler(async (req, res) => {
     gender,
     address,
     avatar: avatar?.url,
-    hospitalId,
-    hospitalName,
     specialty,
     experienceYears,
     qualification,
@@ -546,22 +542,16 @@ const deleteAccount = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Account deleted successfully"));
 });
 
-
-const getDoctorsByHospital = asyncHandler(async (req, res) => {
-  const { hospitalId } = req.query;
-  if (!hospitalId) {
-    throw new ApiError(400, "hospitalId required");
-  }
-
-  const doctors = await User.find({
-    role: "DOCTOR",
-  }).select("fullName specialty avatar hospitalId");
+export const getDoctors = asyncHandler(async (req, res) => {
+  const doctors = await User.find(
+    { role: "DOCTOR" },
+    "fullName avatar specialty qualification"
+  );
 
   return res.status(200).json(
-    new ApiResponse(200, doctors, "Doctors fetched")
+    new ApiResponse(200, doctors, "Doctors fetched successfully")
   );
 });
-
 
 
 export {
@@ -579,5 +569,4 @@ export {
   updateUserAvatar,
   deleteAccount,
   resendVerificationCode,
-  getDoctorsByHospital,
 };

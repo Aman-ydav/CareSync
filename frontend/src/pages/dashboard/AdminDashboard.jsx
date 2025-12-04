@@ -1,304 +1,124 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Users, Hospital, Calendar, FileText, TrendingUp, Activity } from 'lucide-react'
-import DashboardHeader from '@/components/dashboard/DashboardHeader'
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAdminStats } from "@/features/admin/adminSlice";
+import { fetchAppointments } from "@/features/appointments/appointmentSlice";
+import DashboardLayout from "@/layout/DashboardLayout";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Activity, Users, UserCheck, CalendarDays, FileText } from "lucide-react";
+
+const StatCard = ({ icon: Icon, label, value, accent }) => (
+  <Card className="border border-border/70">
+    <CardHeader className="flex flex-row items-center justify-between pb-3">
+      <CardTitle className="text-xs font-medium text-muted-foreground">
+        {label}
+      </CardTitle>
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${accent}`}>
+        <Icon className="w-4 h-4" />
+      </div>
+    </CardHeader>
+    <CardContent>
+      <p className="text-xl font-semibold">{value ?? "-"}</p>
+    </CardContent>
+  </Card>
+);
 
 const AdminDashboard = () => {
-  const { user } = useAuth()
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalDoctors: 0,
-    totalPatients: 0,
-    totalHospitals: 0,
-    todayAppointments: 0,
-    activeRecords: 0
-  })
+  const dispatch = useDispatch();
+  const { stats, loading: statsLoading } = useSelector((state) => state.admin);
+  const { list: appointments, loading: aptsLoading } = useSelector(
+    (state) => state.appointments
+  );
 
-  // In a real app, you would fetch these from your API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setStats({
-        totalUsers: 1245,
-        totalDoctors: 45,
-        totalPatients: 1200,
-        totalHospitals: 12,
-        todayAppointments: 67,
-        activeRecords: 890
-      })
-    }, 500)
-  }, [])
+    dispatch(fetchAdminStats());
+    // upcoming appointments
+    dispatch(fetchAppointments({ page: 1, limit: 5 }));
+  }, [dispatch]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-lg font-semibold">Admin Dashboard</h1>
+          <p className="text-xs text-muted-foreground">
+            Monitor users, appointments and health records across CareSync.
+          </p>
+        </div>
 
-      <DashboardHeader/>
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <StatCard
+            icon={Users}
+            label="Total Users"
+            value={stats?.totalUsers}
+            accent="bg-primary/10 text-primary"
+          />
+          <StatCard
+            icon={UserCheck}
+            label="Doctors"
+            value={stats?.totalDoctors}
+            accent="bg-emerald-100 text-emerald-700"
+          />
+          <StatCard
+            icon={UserCheck}
+            label="Patients"
+            value={stats?.totalPatients}
+            accent="bg-blue-100 text-blue-700"
+          />
+          <StatCard
+            icon={CalendarDays}
+            label="Today's Appointments"
+            value={stats?.todayAppointments}
+            accent="bg-amber-100 text-amber-700"
+          />
+          <StatCard
+            icon={FileText}
+            label="Active Health Records"
+            value={stats?.activeRecords}
+            accent="bg-violet-100 text-violet-700"
+          />
+        </div>
 
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
-        <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Manage the CareSync platform and view system analytics</p>
-      </motion.div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {/* Recent Appointments */}
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Users</p>
-                <h3 className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</h3>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Activity className="w-4 h-4 text-primary" />
+              Recent Appointments
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-xs">
+            {aptsLoading || statsLoading ? (
+              <p className="text-muted-foreground">Loading...</p>
+            ) : appointments && appointments.length > 0 ? (
+              <div className="space-y-2">
+                {appointments.slice(0, 5).map((apt) => (
+                  <div
+                    key={apt._id}
+                    className="flex items-center justify-between border border-border/70 rounded-md px-3 py-2"
+                  >
+                    <div className="space-y-0.5">
+                      <p className="text-[13px] font-medium">
+                        {new Date(apt.date).toLocaleDateString()} • {apt.time}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {apt.patient?.fullName} with Dr. {apt.doctor?.fullName}
+                      </p>
+                    </div>
+                    <span className="text-[11px] px-2 py-1 rounded-full bg-muted">
+                      {apt.status}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <div className="p-3 rounded-lg bg-primary/10">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-            <div className="mt-4 flex gap-4">
-              <div>
-                <p className="text-xs text-muted-foreground">Doctors</p>
-                <p className="font-semibold">{stats.totalDoctors}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Patients</p>
-                <p className="font-semibold">{stats.totalPatients}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Hospitals</p>
-                <h3 className="text-2xl font-bold">{stats.totalHospitals}</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-green-500/10">
-                <Hospital className="w-6 h-6 text-green-500" />
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" className="mt-4 w-full" asChild>
-              <Link to="/hospitals">Manage Hospitals</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Today's Appointments</p>
-                <h3 className="text-2xl font-bold">{stats.todayAppointments}</h3>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-500/10">
-                <Calendar className="w-6 h-6 text-blue-500" />
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" className="mt-4 w-full" asChild>
-              <Link to="/appointments">View All</Link>
-            </Button>
+            ) : (
+              <p className="text-muted-foreground">No recent appointments.</p>
+            )}
           </CardContent>
         </Card>
       </div>
+    </DashboardLayout>
+  );
+};
 
-      {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full max-w-xl grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="management">Management</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>System Health</CardTitle>
-                <CardDescription>Platform status and performance</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span>API Status</span>
-                  <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    Operational
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Database</span>
-                  <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    Connected
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Storage</span>
-                  <span className="text-muted-foreground">78% used</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Active Sessions</span>
-                  <span className="text-muted-foreground">124</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest system events</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { time: '2 min ago', event: 'New user registration', user: 'John Doe' },
-                    { time: '5 min ago', event: 'Appointment booked', user: 'Dr. Smith' },
-                    { time: '15 min ago', event: 'Health record created', user: 'Dr. Johnson' },
-                    { time: '1 hour ago', event: 'Hospital added', user: 'Admin' },
-                  ].map((activity, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
-                      <div className="flex-1">
-                        <p className="text-sm">{activity.event}</p>
-                        <p className="text-xs text-muted-foreground">{activity.time} • {activity.user}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="management" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">User Management</h3>
-                    <p className="text-sm text-muted-foreground">Manage all users, doctors, and patients</p>
-                  </div>
-                  <Button asChild className="w-full">
-                    <Link to="/admin/users">Manage Users</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="p-3 rounded-lg bg-green-500/10">
-                    <Hospital className="w-6 h-6 text-green-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">Hospital Management</h3>
-                    <p className="text-sm text-muted-foreground">Add, edit, or remove hospitals</p>
-                  </div>
-                  <Button asChild className="w-full">
-                    <Link to="/hospitals">Manage Hospitals</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className="p-3 rounded-lg bg-blue-500/10">
-                    <FileText className="w-6 h-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">System Settings</h3>
-                    <p className="text-sm text-muted-foreground">Configure platform settings</p>
-                  </div>
-                  <Button asChild className="w-full">
-                    <Link to="/admin/settings">Configure</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Analytics</CardTitle>
-              <CardDescription>Growth and usage statistics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h4 className="font-semibold">User Growth</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">This Week</span>
-                      <span className="font-semibold text-green-600">+12%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">This Month</span>
-                      <span className="font-semibold text-green-600">+45%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">This Year</span>
-                      <span className="font-semibold text-green-600">+230%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Engagement Metrics</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Avg. Sessions</span>
-                      <span className="font-semibold">3.2</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Appointment Rate</span>
-                      <span className="font-semibold">78%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Retention</span>
-                      <span className="font-semibold">92%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <h4 className="font-semibold mb-4">Quick Actions</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button variant="outline" asChild>
-                    <Link to="/admin/reports">Generate Reports</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link to="/admin/backup">Backup Data</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link to="/admin/audit">View Audit Log</Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
-
-export default AdminDashboard
+export default AdminDashboard;

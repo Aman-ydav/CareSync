@@ -1,63 +1,53 @@
-import { useSelector, useDispatch } from "react-redux";
-import { showVerificationModal } from "@/features/auth/authSlice";
+import { useDispatch } from "react-redux";
+import { useAuth } from "@/hooks/useAuth";
+import { logoutUser } from "@/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Mail, Timer } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Bell, LogOut, Menu } from "lucide-react";
 
-
-const DashboardHeader = () => {
+const DashboardHeader = ({ onToggleSidebar }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useAuth();
 
-  const handleVerifyClick = () => {
-    if (user?.email) {
-      dispatch(showVerificationModal(user.email));
-    }
+  const handleLogout = () => {
+    dispatch(logoutUser());
   };
 
- 
-  if (!user || user.isVerified) return null;
-
   return (
-    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-full bg-yellow-100 dark:bg-yellow-800">
-            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-          </div>
-          <div>
-            <h3 className="font-medium text-yellow-800 dark:text-yellow-300">
-              Verify your email address
-            </h3>
-            <p className="text-sm text-yellow-700 dark:text-yellow-400">
-              Please verify your email ({user.email}) to access all features
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={handleVerifyClick}
-            variant="outline"
-            size="sm"
-            className="border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-800"
-          >
-            <Mail className="h-4 w-4 mr-2" />
-            Verify Now
-          </Button>
-         
-         <Link to="/dashboard">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-800"
-          >
-            <Timer className="h-4 w-4 mr-2" />
-            Do it Later
-          </Button>
-          </Link>
+    <header className="w-full border-b bg-background/80 backdrop-blur px-4 py-3 flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <button
+          className="md:hidden p-2 rounded-md border border-border"
+          onClick={onToggleSidebar}
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+        <div>
+          <p className="text-sm font-semibold">Welcome, {user?.fullName || "User"}</p>
+          <p className="text-xs text-muted-foreground">
+            {user?.role === "ADMIN"
+              ? "Admin Dashboard"
+              : user?.role === "DOCTOR"
+              ? "Doctor Panel"
+              : "Patient Portal"}
+          </p>
         </div>
       </div>
-    </div>
+
+      <div className="flex items-center gap-3">
+        <button className="p-2 rounded-full border border-border hover:bg-muted">
+          <Bell className="w-4 h-4" />
+        </button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex items-center gap-1 text-xs"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
+      </div>
+    </header>
   );
 };
 

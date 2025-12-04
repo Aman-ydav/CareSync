@@ -1,31 +1,39 @@
-import { Router } from "express";
+import express from "express";
 import {
+  createAppointment,
   getAppointments,
   getAppointmentById,
-  createAppointment,
   updateAppointment,
   cancelAppointment,
   getAvailableSlots
 } from "../controllers/appointment.controller.js";
+
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { allowRoles } from "../middlewares/roleCheck.middleware.js";
 
-const router = Router();
+const router = express.Router();
 
-// All routes require authentication
-router.use(verifyJWT);
+// Get all appointments
+router.get("/", verifyJWT, getAppointments);
 
-router.route("/")
-  .get(getAppointments)
-  .post(createAppointment);
+// Get single appointment
+router.get("/:id", verifyJWT, getAppointmentById);
 
-router.route("/slots")
-  .get(getAvailableSlots);
+// Create appointment
+router.post("/", verifyJWT, createAppointment);
 
-router.route("/:id")
-  .get(getAppointmentById)
-  .patch(updateAppointment);
+// Update appointment (time, status, notes, etc)
+router.patch(
+  "/:id",
+  verifyJWT,
+  allowRoles("ADMIN", "DOCTOR", "PATIENT"),
+  updateAppointment
+);
 
-router.route("/:id/cancel")
-  .patch(cancelAppointment);
+// Cancel appointment
+router.post("/:id/cancel", verifyJWT, cancelAppointment);
+
+// Get available slots
+router.get("/doctor/slots/available", verifyJWT, getAvailableSlots);
 
 export default router;

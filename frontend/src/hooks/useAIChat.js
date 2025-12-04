@@ -1,59 +1,85 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { useCallback } from 'react';
+import { useDispatch, useSelector } from "react-redux";
+import { useCallback, useEffect } from "react";
 import {
-  sendMessage,
+  sendChatMessage,
   fetchChatHistory,
-  clearChatHistory,
+  clearChat,
+  fetchChatSessions,
   addMessage,
+  setCurrentSession,
   clearMessages,
-  setActiveSession,
-  clearError,
-} from '@/features/ai-chat/aiChatSlice';
+  showDisclaimer,
+} from "@/features/aiChat/aiChatSlice";
 
 export const useAIChat = () => {
   const dispatch = useDispatch();
-  const { messages, history, loading, error, activeSession } = useSelector((state) => state.aiChat);
+  const {
+    messages,
+    sessions,
+    currentSession,
+    loading,
+    streaming,
+    error,
+    disclaimerShown,
+  } = useSelector((state) => state.aiChat);
 
-  const sendMessageAction = useCallback((message, sessionId) => {
-    return dispatch(sendMessage({ message, sessionId })).unwrap();
+  const sendMessage = useCallback((message, sessionId = currentSession) => {
+    return dispatch(sendChatMessage({ message, sessionId }));
+  }, [dispatch, currentSession]);
+
+  const getChatHistory = useCallback((sessionId = currentSession, limit = 50) => {
+    return dispatch(fetchChatHistory({ sessionId, limit }));
+  }, [dispatch, currentSession]);
+
+  const clearChatHistory = useCallback((sessionId = null) => {
+    return dispatch(clearChat(sessionId));
   }, [dispatch]);
 
-  const fetchChatHistoryAction = useCallback((sessionId, limit) => {
-    return dispatch(fetchChatHistory({ sessionId, limit })).unwrap();
+  const getSessions = useCallback(() => {
+    return dispatch(fetchChatSessions());
   }, [dispatch]);
 
-  const clearChatHistoryAction = useCallback((sessionId) => {
-    return dispatch(clearChatHistory(sessionId)).unwrap();
+  const switchSession = useCallback((sessionId) => {
+    dispatch(setCurrentSession(sessionId));
+    getChatHistory(sessionId);
+  }, [dispatch, getChatHistory]);
+
+  const addLocalMessage = useCallback((message, type = "user") => {
+    dispatch(addMessage({
+      type,
+      content: message,
+      timestamp: new Date().toISOString(),
+    }));
   }, [dispatch]);
 
-  const addMessageAction = useCallback((message) => {
-    dispatch(addMessage(message));
-  }, [dispatch]);
-
-  const clearMessagesAction = useCallback(() => {
+  const clearLocalMessages = useCallback(() => {
     dispatch(clearMessages());
   }, [dispatch]);
 
-  const setActiveSessionAction = useCallback((sessionId) => {
-    dispatch(setActiveSession(sessionId));
+  const displayDisclaimer = useCallback(() => {
+    dispatch(showDisclaimer());
   }, [dispatch]);
 
-  const clearErrorAction = useCallback(() => {
-    dispatch(clearError());
-  }, [dispatch]);
+  useEffect(() => {
+    getChatHistory();
+    getSessions();
+  }, []);
 
   return {
     messages,
-    history,
+    sessions,
+    currentSession,
     loading,
+    streaming,
     error,
-    activeSession,
-    sendMessage: sendMessageAction,
-    fetchChatHistory: fetchChatHistoryAction,
-    clearChatHistory: clearChatHistoryAction,
-    addMessage: addMessageAction,
-    clearMessages: clearMessagesAction,
-    setActiveSession: setActiveSessionAction,
-    clearError: clearErrorAction,
+    disclaimerShown,
+    sendMessage,
+    getChatHistory,
+    clearChatHistory,
+    getSessions,
+    switchSession,
+    addLocalMessage,
+    clearLocalMessages,
+    displayDisclaimer,
   };
 };

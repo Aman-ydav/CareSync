@@ -1,83 +1,97 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import {
   fetchAppointments,
   fetchAppointmentById,
-  fetchSlots,
   createAppointment,
+  updateAppointment,
   cancelAppointment,
-  clearAppointmentError,
+  fetchAvailableSlots,
+  fetchUpcomingAppointments,
+  updateAppointmentStatus,
+  setFilters,
+  clearFilters,
 } from "@/features/appointments/appointmentSlice";
 
 export const useAppointments = () => {
   const dispatch = useDispatch();
-
   const {
-    list,
-    appointment,
-    slots,
+    appointments,
+    upcomingAppointments,
+    currentAppointment,
+    availableSlots,
     pagination,
     loading,
     error,
+    filters,
   } = useSelector((state) => state.appointments);
 
-  // -- MAP new names to old format
-  const appointments = list;
+  const getAppointments = useCallback((params = {}) => {
+    return dispatch(fetchAppointments({ ...filters, ...params }));
+  }, [dispatch, filters]);
 
-  const loadAppointments = useCallback(
-    (params = {}) => {
-      return dispatch(fetchAppointments(params)).unwrap();
-    },
-    [dispatch]
-  );
-
-  const loadAppointmentById = useCallback(
-    (id) => {
-      if (!id) return;
-      return dispatch(fetchAppointmentById(id)).unwrap();
-    },
-    [dispatch]
-  );
-
-  const loadSlots = useCallback(
-    (params) => {
-      return dispatch(fetchSlots(params)).unwrap();
-    },
-    [dispatch]
-  );
-
-  const addAppointment = useCallback(
-    (payload) => {
-      return dispatch(createAppointment(payload)).unwrap();
-    },
-    [dispatch]
-  );
-
-  const cancel = useCallback(
-    ({ id, reason }) => {
-      return dispatch(cancelAppointment({ id, reason })).unwrap();
-    },
-    [dispatch]
-  );
-
-  const clearError = useCallback(() => {
-    dispatch(clearAppointmentError());
+  const getAppointment = useCallback((id) => {
+    return dispatch(fetchAppointmentById(id));
   }, [dispatch]);
 
+  const bookAppointment = useCallback((data) => {
+    return dispatch(createAppointment(data));
+  }, [dispatch]);
+
+  const editAppointment = useCallback((id, data) => {
+    return dispatch(updateAppointment({ id, data }));
+  }, [dispatch]);
+
+  const cancelAppt = useCallback((id, reason) => {
+    return dispatch(cancelAppointment({ id, reason }));
+  }, [dispatch]);
+
+  const getSlots = useCallback((doctorId, date) => {
+    return dispatch(fetchAvailableSlots({ doctorId, date }));
+  }, [dispatch]);
+
+  const getUpcoming = useCallback((limit = 5) => {
+    return dispatch(fetchUpcomingAppointments(limit));
+  }, [dispatch]);
+
+  const updateStatus = useCallback((id, status, notes = "") => {
+    return dispatch(updateAppointmentStatus({ id, status, notes }));
+  }, [dispatch]);
+
+  const updateFilters = useCallback((newFilters) => {
+    dispatch(setFilters(newFilters));
+  }, [dispatch]);
+
+  const resetFilters = useCallback(() => {
+    dispatch(clearFilters());
+  }, [dispatch]);
+
+  useEffect(() => {
+    getAppointments();
+  }, [filters]);
+
+  useEffect(() => {
+    getUpcoming(5);
+  }, []);
+
   return {
-    // DATA
     appointments,
-    appointment,
-    slots,
+    upcomingAppointments,
+    currentAppointment,
+    availableSlots,
     pagination,
     loading,
     error,
-
-    fetchAppointments: loadAppointments,
-    fetchAppointmentById: loadAppointmentById,
-    fetchSlots: loadSlots,
-    createAppointment: addAppointment,
-    cancelAppointment: cancel,
-    clearError,
+    filters,
+    getAppointments,
+    getAppointment,
+    bookAppointment,
+    editAppointment,
+    cancelAppointment: cancelAppt,
+    getAvailableSlots: getSlots,
+    getUpcomingAppointments: getUpcoming,
+    updateAppointmentStatus: updateStatus,
+    updateFilters,
+    resetFilters,
   };
 };

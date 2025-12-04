@@ -48,7 +48,7 @@ const Layout = ({ children }) => {
         </AnimatePresence>
       </main>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   )
 }

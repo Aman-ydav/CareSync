@@ -169,7 +169,7 @@ export const logoutUser = createAsyncThunk(
     try {
       await api.post("/users/logout", {}, { withCredentials: true });
 
-      // Clear localStorage - LIKE ROOMEZY
+      // Clear localStorage
       localStorage.removeItem("user");
       localStorage.removeItem("caresync_tokens");
       delete api.defaults.headers.common.Authorization;

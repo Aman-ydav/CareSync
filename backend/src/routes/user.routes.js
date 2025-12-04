@@ -14,10 +14,11 @@ import {
   updateUserAvatar,
   deleteAccount,
   resendVerificationCode,
-  getDoctorsByHospital,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { getDoctors } from "../controllers/user.controller.js";
+
 
 const router = Router();
 
@@ -59,11 +60,6 @@ router.route("/update-avatar").patch(
 
 router.route("/delete-account").delete(verifyJWT, deleteAccount);
 
-
-
-router.get("/doctors", getDoctorsByHospital);
-
-
-
+router.route("/doctors").get(verifyJWT, getDoctors);
 
 export default router;
