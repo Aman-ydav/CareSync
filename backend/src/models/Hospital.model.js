@@ -1,76 +1,48 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const hospitalSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
-    trim: true
+    unique: true
   },
   slug: {
     type: String,
-    unique: true,
-    lowercase: true
+    required: true,
+    unique: true
   },
   city: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   state: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   country: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   contactEmail: {
     type: String,
-    required: true,
-    lowercase: true,
-    trim: true
+    required: true
   },
   address: {
-    type: String,
-    trim: true
+    type: String
   },
   phone: {
-    type: String,
-    trim: true
+    type: String
   },
   description: {
-    type: String,
-    trim: true
-  },
-  isActive: {
-    type: Boolean,
-    default: true
+    type: String
   }
 }, {
   timestamps: true
 });
 
-hospitalSchema.pre('validate', async function() {
-  if (this.isModified('name')) {
-    this.slug = this.name
-      .toLowerCase()
-      .replace(/ /g, '-')
-      .replace(/[^\w-]+/g, '');
-
-    // check unique slug
-    let exists = await mongoose.model('Hospital').exists({ slug: this.slug });
-    let counter = 1;
-
-    while (exists) {
-      this.slug = `${this.slug}-${counter++}`;
-      exists = await mongoose.model('Hospital').exists({ slug: this.slug });
-    }
-  }
+hospitalSchema.pre('save', function(next) {
+  this.slug = this.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+  next();
 });
 
-hospitalSchema.index({ city: 1, state: 1, country: 1 });
-
-export const Hospital = mongoose.model('Hospital', hospitalSchema);
+module.exports = mongoose.model('Hospital', hospitalSchema);
