@@ -51,7 +51,7 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 bg-linear-to-br from-background to-muted">
+      <section className="relative py-20 bg-linear-to-br from-background to-muted">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

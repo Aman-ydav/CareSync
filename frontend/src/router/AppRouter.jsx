@@ -1,32 +1,33 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import Layout from "@/components/layout/Layout";
-import Home from "@/pages/home/Home";
-import AuthModal from "@/components/auth/AuthModal";
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
+import AppLayout from "@/layout/AppLayout";
+import DashboardLayout from "@/layout/DashboardLayout";
+
+import Home from "@/pages/home/Home";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import AuthModal from "@/components/auth/AuthModal";
+
+// Dashboards
 import AdminDashboard from "@/pages/dashboard/AdminDashboard";
 import DoctorDashboard from "@/pages/dashboard/DoctorDashboard";
 import PatientDashboard from "@/pages/dashboard/PatientDashboard";
 
+// Shared pages
 import AppointmentsPage from "@/pages/appointments/AppointmentsPage";
-import HealthRecordsPage from "@/pages/records/HealthRecordsPage";
-import AiAssistantPage from "@/pages/ai/AiAssistantPage";
+import AppointmentDetailsPage from "@/pages/appointments/AppointmentDetailsPage";
 import NewAppointmentPage from "@/pages/appointments/NewAppointmentPage";
 
-import { useSelector } from "react-redux";
-import HealthRecordCreatePage from "@/pages/records/HealthRecordCreatePage";
-import AppointmentDetailsPage from "@/pages/appointments/AppointmentDetailsPage";
+import HealthRecordsPage from "@/pages/records/HealthRecordsPage";
 import HealthRecordDetailsPage from "@/pages/records/HealthRecordDetailsPage";
+import HealthRecordCreatePage from "@/pages/records/HealthRecordCreatePage";
+
+import AiAssistantPage from "@/pages/ai/AiAssistantPage";
 
 export default function AppRouter() {
-  const location = useLocation();
   const { user } = useSelector((state) => state.auth);
 
-  const isAuthRoute =
-    location.pathname === "/login" || location.pathname === "/register";
-
-  // default redirect based on role
-  const defaultDashboard = () => {
+  const getDashboardPath = () => {
     if (!user) return "/login";
     if (user.role === "ADMIN") return "/dashboard/admin";
     if (user.role === "DOCTOR") return "/dashboard/doctor";
@@ -34,175 +35,152 @@ export default function AppRouter() {
   };
 
   return (
-    <>
-      {/* PUBLIC / MAIN ROUTES */}
-      {!isAuthRoute && (
-        <Routes location={location}>
-          {/* Home */}
-          <Route
-            path="/"
-            element={
-              <Layout showNavbar={true}>
-                <Home />
-              </Layout>
-            }
-          />
+    <Routes>
 
-          {/* Middle redirect when someone opens /dashboard */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Navigate to={defaultDashboard()} replace />
-              </ProtectedRoute>
-            }
-          />
+      {/* ========= PUBLIC ROUTES =========== */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Home />} />
 
-          {/* ROLE-WISE DASHBOARDS */}
-          <Route
-            path="/dashboard/admin"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["ADMIN"]}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        {/* Login/Register as modal overlay */}
+        <Route
+          path="/login"
+          element={
+            <>
+              <Home />
+              <AuthModal type="login" />
+            </>
+          }
+        />
 
-          <Route
-            path="/dashboard/doctor"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["DOCTOR"]}>
-                  <DoctorDashboard />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        <Route
+          path="/register"
+          element={
+            <>
+              <Home />
+              <AuthModal type="register" />
+            </>
+          }
+        />
+      </Route>
 
-          <Route
-            path="/dashboard/patient"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["PATIENT"]}>
-                  <PatientDashboard />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
 
-          {/* SHARED PAGES */}
-          <Route
-            path="/appointments"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
-                  <AppointmentsPage />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+      {/* ====== DASHBOARD ROUTES (Protected) ====== */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
 
-          <Route
-            path="/appointments/new"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["PATIENT"]}>
-                  <NewAppointmentPage />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        {/* When user visits /dashboard route → redirect by role */}
+        <Route
+          index
+          element={<Navigate to={getDashboardPath()} replace />}
+        />
 
-          <Route
-            path="/appointments/:id"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
-                  <AppointmentDetailsPage />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        {/* ADMIN */}
+        <Route
+          path="admin"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/records"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
-                  <HealthRecordsPage />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        {/* DOCTOR */}
+        <Route
+          path="doctor"
+          element={
+            <ProtectedRoute roles={["DOCTOR"]}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/records/new"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["ADMIN", "DOCTOR"]}>
-                  <HealthRecordCreatePage />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        {/* PATIENT */}
+        <Route
+          path="patient"
+          element={
+            <ProtectedRoute roles={["PATIENT"]}>
+              <PatientDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/records/:id"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
-                  <HealthRecordDetailsPage />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        {/* ===== Shared routes under dashboard ===== */}
+        {/* Appointments */}
+        <Route
+          path="appointments"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <AppointmentsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/ai-assistant"
-            element={
-              <Layout>
-                <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
-                  <AiAssistantPage />
-                </ProtectedRoute>
-              </Layout>
-            }
-          />
+        <Route
+          path="appointments/:id"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <AppointmentDetailsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      )}
+        <Route
+          path="appointments/new"
+          element={
+            <ProtectedRoute roles={["PATIENT"]}>
+              <NewAppointmentPage />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* AUTH MODAL ROUTES */}
-      {isAuthRoute && (
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <>
-                <Layout showNavbar={true}>
-                  <Home />
-                </Layout>
-                <AuthModal type="login" />
-              </>
-            }
-          />
+        {/* Records */}
+        <Route
+          path="records"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <HealthRecordsPage />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/register"
-            element={
-              <>
-                <Layout showNavbar={true}>
-                  <Home />
-                </Layout>
-                <AuthModal type="register" />
-              </>
-            }
-          />
-        </Routes>
-      )}
-    </>
+        <Route
+          path="records/new"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR"]}>
+              <HealthRecordCreatePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="records/:id"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <HealthRecordDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* AI Assistant */}
+        <Route
+          path="ai"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <AiAssistantPage />
+            </ProtectedRoute>
+          }
+        />
+
+      </Route>
+
+      {/* fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

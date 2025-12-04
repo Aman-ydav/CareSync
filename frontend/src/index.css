@@ -141,6 +141,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @keyframes slideInLeft {
   from {
     opacity: 0;

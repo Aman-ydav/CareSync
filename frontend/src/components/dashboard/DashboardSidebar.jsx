@@ -9,95 +9,160 @@ import {
   UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { cn } from "@/lib/utils"; // if you have cn helper, else remove and use template classes
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const SidebarLink = ({ to, icon: Icon, label }) => (
   <NavLink
     to={to}
+    end
     className={({ isActive }) =>
       cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+        "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         isActive
           ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
       )
     }
   >
-    <Icon className="w-4 h-4" />
+    <Icon className="h-4 w-4" />
     <span>{label}</span>
   </NavLink>
 );
+
+const sidebarVariants = {
+  initial: { x: "-100%" },
+  animate: {
+    x: 0,
+    transition: {
+      type: "spring",
+      damping: 24,
+      stiffness: 250,
+    },
+  },
+  exit: {
+    x: "-100%",
+    transition: { type: "spring", damping: 24, stiffness: 250 },
+  },
+};
 
 const DashboardSidebar = () => {
   const { role } = useAuth();
 
   return (
-    <aside className="hidden md:flex h-full flex-col w-64 border-r bg-background/80 backdrop-blur">
-      <div className="px-4 py-4 border-b flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <ShieldCheck className="w-5 h-5 text-primary" />
+    <motion.div
+      variants={sidebarVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="flex h-full w-64 flex-col bg-background/95 backdrop-blur border-r"
+    >
+      {/* Brand */}
+      <div className="flex items-center gap-2 border-b px-4 py-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+          <ShieldCheck className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <div className="font-semibold text-sm">CareSync</div>
-          <div className="text-xs text-muted-foreground">HealthCloud</div>
+          <p className="text-sm font-semibold">CareSync</p>
+          <p className="text-xs text-muted-foreground">HealthCloud</p>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-4">
+      {/* Navigation */}
+      <nav className="flex-1 space-y-4 px-3 py-4">
+
+        {/* Overview */}
         <div>
-          <p className="px-2 text-xs font-semibold text-muted-foreground mb-2">
+          <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
             Overview
           </p>
-          <SidebarLink to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+          <SidebarLink
+            to="/dashboard"
+            icon={LayoutDashboard}
+            label="Dashboard"
+          />
         </div>
 
+        {/* Care */}
         <div>
-          <p className="px-2 text-xs font-semibold text-muted-foreground mb-2">
+          <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
             Care
           </p>
-          <SidebarLink to="/appointments" icon={CalendarDays} label="Appointments" />
-          <SidebarLink to="/records" icon={FileText} label="Health Records" />
-          <SidebarLink to="/ai-assistant" icon={MessageSquare} label="AI Assistant" />
+
+          {/* shared for all roles */}
+          <SidebarLink
+            to="/dashboard/appointments"
+            icon={CalendarDays}
+            label="Appointments"
+          />
+
+          <SidebarLink
+            to="/dashboard/records"
+            icon={FileText}
+            label="Health Records"
+          />
+
+          <SidebarLink
+            to="/dashboard/ai"
+            icon={MessageSquare}
+            label="AI Assistant"
+          />
         </div>
 
+        {/* Admin */}
         {role === "ADMIN" && (
           <div>
-            <p className="px-2 text-xs font-semibold text-muted-foreground mb-2">
+            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
               Admin
             </p>
-            <SidebarLink to="/dashboard/admin" icon={ShieldCheck} label="Admin Panel" />
+            <SidebarLink
+              to="/dashboard/admin"
+              icon={ShieldCheck}
+              label="Admin Panel"
+            />
           </div>
         )}
 
+        {/* Doctor */}
         {role === "DOCTOR" && (
           <div>
-            <p className="px-2 text-xs font-semibold text-muted-foreground mb-2">
+            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
               Doctor
             </p>
-            <SidebarLink to="/dashboard/doctor" icon={Stethoscope} label="Doctor View" />
+            <SidebarLink
+              to="/dashboard/doctor"
+              icon={Stethoscope}
+              label="Doctor View"
+            />
           </div>
         )}
 
+        {/* Patient */}
         {role === "PATIENT" && (
           <div>
-            <p className="px-2 text-xs font-semibold text-muted-foreground mb-2">
+            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
               Patient
             </p>
-            <SidebarLink to="/dashboard/patient" icon={UserCircle} label="My Care" />
+            <SidebarLink
+              to="/dashboard/patient"
+              icon={UserCircle}
+              label="My Care"
+            />
           </div>
         )}
       </nav>
 
-      <div className="px-4 py-4 border-t">
+      {/* Footer */}
+      <div className="border-t px-4 py-4">
         <Button variant="outline" className="w-full justify-center" asChild>
           <NavLink to="/profile">
-            <UserCircle className="w-4 h-4 mr-2" />
+            <UserCircle className="mr-2 h-4 w-4" />
             Profile
           </NavLink>
         </Button>
       </div>
-    </aside>
+    </motion.div>
   );
 };
 
