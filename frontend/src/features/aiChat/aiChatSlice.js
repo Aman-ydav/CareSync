@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "@/api/axiosInterceptor";
 import { toast } from "sonner";
+import crypto from "crypto";
 
 export const sendAiMessage = createAsyncThunk(
   "aiChat/sendAiMessage",
@@ -13,7 +14,9 @@ export const sendAiMessage = createAsyncThunk(
         response: response.data.data.response,
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to send message");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to send message"
+      );
     }
   }
 );
@@ -30,7 +33,9 @@ export const fetchChatHistory = createAsyncThunk(
         messages: response.data.data.messages || [],
       };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to load chat history");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to load chat history"
+      );
     }
   }
 );
@@ -42,7 +47,9 @@ export const clearChatHistory = createAsyncThunk(
       await api.delete("/ai-chat/history", { params: { sessionId } });
       return { sessionId };
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to clear chat history");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to clear chat history"
+      );
     }
   }
 );
@@ -81,7 +88,8 @@ const aiChatSlice = createSlice({
         const { sessionId, message, response } = action.payload;
         const session = state.sessions[sessionId] || { messages: [] };
 
-        session.messages.unshift({
+        session.messages.push({
+          id: Math.random().toString(36).slice(2),
           message,
           response,
           createdAt: new Date().toISOString(),

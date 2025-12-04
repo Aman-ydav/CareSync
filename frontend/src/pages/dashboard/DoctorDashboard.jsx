@@ -1,18 +1,22 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DashboardLayout from "@/layout/DashboardLayout";
-import { fetchAppointments } from "@/features/appointments/appointmentSlice";
+import {
+  fetchAppointments,
+  cancelAppointment,
+  updateAppointment,
+} from "@/features/appointments/appointmentSlice";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CalendarDays, Stethoscope, Activity } from "lucide-react";
 import AppointmentList from "@/components/appointments/AppointmentList";
+import { toast } from "sonner";
 
 const DoctorDashboard = () => {
   const dispatch = useDispatch();
-  const { list, loading, filters } = useSelector((state) => state.appointments);
+  const { list, loading } = useSelector((state) => state.appointments);
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    // doctor's appointments only (backend uses req.user.role === 'DOCTOR')
     dispatch(fetchAppointments({ limit: 10 }));
   }, [dispatch]);
 
@@ -20,6 +24,42 @@ const DoctorDashboard = () => {
     const d = new Date(apt.date).toDateString();
     return d === new Date().toDateString();
   });
+
+  const handleCancel = async (apt) => {
+    if (!confirm("Cancel this appointment?")) return;
+
+    const result = await dispatch(
+      cancelAppointment({
+        id: apt._id,
+        cancellationReason: "Cancelled by doctor",
+      })
+    );
+
+    if (cancelAppointment.fulfilled.match(result)) {
+      toast.success("Appointment cancelled");
+      dispatch(fetchAppointments({ limit: 10 }));
+    } else {
+      toast.error(result.payload || "Failed to cancel appointment");
+    }
+  };
+
+  const handleConfirm = async (apt) => {
+    if (!confirm("Confirm this appointment?")) return;
+
+    const result = await dispatch(
+      updateAppointment({
+        id: apt._id,
+        data: { status: "Confirmed" },
+      })
+    );
+
+    if (updateAppointment.fulfilled.match(result)) {
+      toast.success("Appointment confirmed");
+      dispatch(fetchAppointments({ limit: 10 }));
+    } else {
+      toast.error(result.payload || "Failed to confirm appointment");
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -36,11 +76,13 @@ const DoctorDashboard = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-xs flex items-center gap-2">
                 <Stethoscope className="w-4 h-4 text-primary" />
-                Today&apos;s Appointments
+                Today's Appointments
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-semibold">{todayAppointments.length}</p>
+              <p className="text-2xl font-semibold">
+                {todayAppointments.length}
+              </p>
               <p className="text-[11px] text-muted-foreground">
                 Patients scheduled for today
               </p>
@@ -93,7 +135,12 @@ const DoctorDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <AppointmentList appointments={list} loading={loading} />
+            <AppointmentList
+              appointments={list}
+              loading={loading}
+              onCancel={handleCancel}
+              onConfirm={handleConfirm}
+            />
           </CardContent>
         </Card>
       </div>

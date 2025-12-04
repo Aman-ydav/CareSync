@@ -2,115 +2,127 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ChatMessage } from "../models/ChatMessage.model.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import "../config.js";
 
-const genAI = new GoogleGenerativeAI(process.env.GENAI_API_KEY);
-const model = genAI.getGenerativeModel({ 
-  model: process.env.GENAI_MODEL || "gemini-pro" 
-});
+// 1. TRIM THE VALUES TO REMOVE HIDDEN SPACES
+const API_KEY = (process.env.GENAI_API_KEY || "").trim();
+// 2. USE THE SPECIFIC '-001' VERSION FOR STABILITY
+const MODEL_NAME = (process.env.GENAI_MODEL || "gemini-1.5-flash-001").trim();
 
-const chatWithAI = asyncHandler(async (req, res) => {
-  const { message, sessionId = 'default' } = req.body;
-  const userId = req.user?._id;
+if (!API_KEY) {
+  console.error("❌ GENAI_API_KEY is missing in .env");
+}
 
-  if (!message || message.trim() === '') {
-    throw new ApiError(400, 'Message is required');
+const SYSTEM = `
+You are CareSync AI. Provide helpful, general health education and wellness guidance.
+Rules:
+- NO diagnosis.
+- NO prescribing medicine.
+- NO treatment plans.
+- Encourage consulting real doctors.
+- Be friendly, helpful, supportive.
+- If serious issue => tell to seek medical help.
+`;
+
+export const chatWithAI = asyncHandler(async (req, res) => {
+  const { message, sessionId = "default" } = req.body;
+  const userId = req.user._id;
+
+  if (!message?.trim()) {
+    throw new ApiError(400, "Message is required");
   }
 
-  // Medical disclaimer
-  const disclaimer = "**Disclaimer:** I am an AI assistant and cannot provide medical diagnoses. My responses are for informational purposes only. Always consult with qualified healthcare professionals for medical advice, diagnosis, or treatment.\n\n";
-
-  // Create medical context
-  const prompt = `You are a helpful medical assistant named CareSync AI. You provide general health information, wellness tips, and explain medical concepts in simple terms.
-
-IMPORTANT RULES:
-1. NEVER provide medical diagnoses
-2. NEVER prescribe medications
-3. ALWAYS advise users to consult healthcare professionals
-4. Provide accurate, evidence-based information
-5. Be empathetic and supportive
-6. If unsure, say "I recommend consulting a healthcare professional"
-
-User's message: "${message}"
-
-Provide a helpful, informative response:`;
+  const prompt = `
+${SYSTEM}
+User: ${message}
+Respond safely & ethically with educational information.
+  `.trim();
 
   try {
-    const result = await model.generateContent(prompt);
-    let aiResponse = disclaimer;
+    // 3. LOG THE URL FOR DEBUGGING (Remove in production)
+    // This helps you see if the URL looks like: .../models/gemini-1.5-flash-001:generateContent...
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
     
-    // Handle different response formats from Gemini
-    if (result && result.response) {
-      const text = result.response.text();
-      aiResponse += text;
-    } else if (result && result.candidates && result.candidates[0]) {
-      aiResponse += result.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error('Invalid response from AI');
+    // console.log("Requesting AI URL:", url); // Uncomment to debug if it fails again
+
+    const body = {
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }],
+        },
+      ],
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
+      console.error("AI HTTP error:", response.status, response.statusText, errorText);
+      
+      // Better error message for debugging
+      throw new Error(`Gemini HTTP error ${response.status}: ${errorText}`);
     }
 
-    // Save chat message if user is authenticated
-    if (userId) {
-      await ChatMessage.create({
-        user: userId,
-        message: message.trim(),
-        response: aiResponse,
-        sessionId,
-        metadata: {
-          timestamp: new Date(),
-          model: process.env.GENAI_MODEL || "gemini-pro"
-        }
-      });
+    const data = await response.json();
+
+    let aiText = "";
+    if (data.candidates?.length) {
+      const parts = data.candidates[0].content?.parts || [];
+      aiText = parts.map((p) => p.text || "").join(" ").trim();
     }
 
-    return res.status(200).json(
-      new ApiResponse(200, { response: aiResponse }, "AI response generated successfully")
+    if (!aiText) {
+      aiText = "I'm sorry, I couldn't generate a response this time.";
+    }
+
+    const disclaimer = "**Disclaimer:** I'm an AI assistant. This is not medical advice. Always consult a real doctor.\n\n";
+    const finalResponse = disclaimer + aiText;
+
+    await ChatMessage.create({
+      user: userId,
+      sessionId,
+      message: message.trim(),
+      response: finalResponse,
+    });
+
+    return res.json(
+      new ApiResponse(200, { response: finalResponse }, "OK")
     );
   } catch (error) {
-    console.error('AI Chat error:', error);
-    
-    // Fallback response
-    const fallbackResponse = "**Disclaimer:** This is not medical advice. Consult your doctor for professional guidance.\n\nI apologize, but I'm currently experiencing technical difficulties. Please try again later or contact your healthcare provider directly for assistance.";
+    console.error("AI ERROR:", error);
 
-    return res.status(200).json(
-      new ApiResponse(200, { response: fallbackResponse }, "Generated fallback response")
+    const fallback = "**Disclaimer:** This is not medical advice.\n\nI'm having trouble responding now. Please try again later.";
+    
+    // Return 200 even on error so frontend doesn't crash, just shows fallback
+    return res.json(
+      new ApiResponse(200, { response: fallback }, "Fallback")
     );
   }
 });
 
-const getChatHistory = asyncHandler(async (req, res) => {
-  const { sessionId = 'default', limit = 50 } = req.query;
+// ... keep getChatHistory and clearChatHistory as they were
+export const getChatHistory = asyncHandler(async (req, res) => {
+  const { sessionId = "default", limit = 50 } = req.query;
   const userId = req.user._id;
-
-  const messages = await ChatMessage.find({
-    user: userId,
-    sessionId
-  })
+  const messages = await ChatMessage.find({ user: userId, sessionId })
     .sort({ createdAt: -1 })
-    .limit(parseInt(limit))
-    .select('message response createdAt');
-
-  return res.status(200).json(
-    new ApiResponse(200, { messages }, "Chat history fetched successfully")
-  );
+    .limit(Number(limit))
+    .select("message response createdAt");
+  return res.json(new ApiResponse(200, { messages }, "History Loaded"));
 });
 
-const clearChatHistory = asyncHandler(async (req, res) => {
+export const clearChatHistory = asyncHandler(async (req, res) => {
   const { sessionId } = req.query;
   const userId = req.user._id;
-
   const filter = { user: userId };
   if (sessionId) filter.sessionId = sessionId;
-
   await ChatMessage.deleteMany(filter);
-
-  return res.status(200).json(
-    new ApiResponse(200, null, "Chat history cleared successfully")
-  );
+  return res.json(new ApiResponse(200, null, "Cleared"));
 });
-
-export {
-  chatWithAI,
-  getChatHistory,
-  clearChatHistory
-};

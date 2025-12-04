@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge"; // if you have it; else use span with classes
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Stethoscope, UserCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,9 +12,8 @@ const statusColors = {
   Cancelled: "bg-red-100 text-red-800",
 };
 
-const AppointmentList = ({ appointments, loading, onView, onCancel }) => {
+const AppointmentList = ({ appointments, loading, onCancel, onConfirm }) => {
   const { user } = useAuth();
-
   const navigate = useNavigate();
 
   if (loading) {
@@ -29,13 +28,23 @@ const AppointmentList = ({ appointments, loading, onView, onCancel }) => {
     );
   }
 
+  const canConfirmStatus = (status) =>
+    ["Pending", "Scheduled"].includes(status);
+
+  const canCancelStatus = (status) =>
+    ["Pending", "Scheduled", "Confirmed"].includes(status);
+
+  const isDoctorOrAdmin =
+    user && (user.role === "DOCTOR" || user.role === "ADMIN");
+
   return (
     <div className="space-y-3">
       {appointments.map((apt) => (
         <div
           key={apt._id}
-          className="flex flex-col md:flex-row md:items-center justify-between gap-3 border border-border rounded-lg p-3 bg-card"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border rounded-lg p-4 bg-card"
         >
+          {/* Left side: info */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-primary" />
@@ -43,6 +52,7 @@ const AppointmentList = ({ appointments, loading, onView, onCancel }) => {
                 {new Date(apt.date).toLocaleDateString()} • {apt.time}
               </span>
             </div>
+
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
               {apt.doctor && (
                 <span className="flex items-center gap-1">
@@ -64,33 +74,58 @@ const AppointmentList = ({ appointments, loading, onView, onCancel }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] font-medium ${
+          {/* Right side: actions */}
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {/* Status badge */}
+            <Badge
+              className={
                 statusColors[apt.status] || "bg-gray-100 text-gray-800"
-              }`}
+              }
             >
               {apt.status}
-            </span>
-            {user.role === "Doctor" && (
+            </Badge>
+
+            {/* View details */}
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => navigate(`/appointments/${apt._id}`)}
+            >
+              View
+            </Button>
+
+            {/* Doctor: create record */}
+            {user?.role === "DOCTOR" && (
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => navigate(`/records/new?appointment=${apt._id}`)}
+                onClick={() =>
+                  navigate(`/health-records/new?appointment=${apt._id}`)
+                }
               >
                 Create Health Record
               </Button>
             )}
 
-            <Button onClick={() => navigate(`/appointments/${apt._id}`)}>
-              View
-            </Button>
+            {/* Confirm (Doctor/Admin only) */}
+            {isDoctorOrAdmin &&
+              canConfirmStatus(apt.status) &&
+              onConfirm && (
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => onConfirm(apt)}
+                >
+                  Confirm
+                </Button>
+              )}
 
-            {["Pending", "Scheduled", "Confirmed"].includes(apt.status) && (
+            {/* Cancel */}
+            {canCancelStatus(apt.status) && onCancel && (
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => onCancel?.(apt)}
+                onClick={() => onCancel(apt)}
               >
                 Cancel
               </Button>

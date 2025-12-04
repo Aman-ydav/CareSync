@@ -27,9 +27,7 @@ const DashboardLayout = ({ children }) => {
       {/* Main content */}
       <div className="flex-1 flex flex-col">
         <DashboardHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
-          {children}
-        </main>
+        <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>
   );
