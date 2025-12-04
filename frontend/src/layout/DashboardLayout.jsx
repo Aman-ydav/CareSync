@@ -91,6 +91,7 @@ const DashboardLayout = () => {
           "
         >
           <div className="mx-auto max-w-6xl w-full">
+
             <Outlet />
           </div>
         </main>

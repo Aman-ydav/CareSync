@@ -23,6 +23,7 @@ import HealthRecordDetailsPage from "@/pages/records/HealthRecordDetailsPage";
 import HealthRecordCreatePage from "@/pages/records/HealthRecordCreatePage";
 
 import AiAssistantPage from "@/pages/ai/AiAssistantPage";
+import CompleteProfilePage from "@/pages/profile/CompleteProfilePage";
 
 export default function AppRouter() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -45,15 +46,10 @@ export default function AppRouter() {
 
   return (
     <Routes>
-
       {/* ========= PUBLIC ROUTES =========== */}
       <Route element={<AppLayout />}>
-
         {/* Home */}
-        <Route
-          path="/"
-          element={redirectIfLoggedIn(<Home />)}
-        />
+        <Route path="/" element={redirectIfLoggedIn(<Home />)} />
 
         {/* Login Modal */}
         <Route
@@ -76,9 +72,7 @@ export default function AppRouter() {
             </>
           )}
         />
-
       </Route>
-
 
       {/* ========= DASHBOARD ROUTES (Protected) =========== */}
       <Route
@@ -89,14 +83,8 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       >
-
         {/* When user visits /dashboard → redirect to role-based page */}
-        <Route
-          index
-          element={
-            <Navigate to={getDashboardPath()} replace />
-          }
-        />
+        <Route index element={<Navigate to={getDashboardPath()} replace />} />
 
         {/* ADMIN */}
         <Route
@@ -127,7 +115,6 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
-
 
         {/* ===== Shared routes under dashboard ===== */}
 
@@ -196,7 +183,14 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="complete-profile"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <CompleteProfilePage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* fallback */}

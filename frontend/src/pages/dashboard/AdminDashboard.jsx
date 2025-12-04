@@ -36,7 +36,7 @@ const AdminDashboard = () => {
     <div className="space-y-6  mt-16">
     
         <VerifyHeader/>
-        
+
       <div>
         <h1 className="text-lg font-semibold">Admin Dashboard</h1>
         <p className="text-xs text-muted-foreground">

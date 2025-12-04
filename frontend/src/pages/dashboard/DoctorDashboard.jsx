@@ -10,25 +10,28 @@ import { CalendarDays, Stethoscope, Activity } from "lucide-react";
 import AppointmentList from "@/components/appointments/AppointmentList";
 import { toast } from "sonner";
 import VerifyHeader from "@/components/dashboard/VerifyHeader";
+import CompleteProfileBanner from "@/components/dashboard/CompleteProfileBanner";
 
 const DoctorDashboard = () => {
   const dispatch = useDispatch();
-  const { list, loading } = useSelector(s => s.appointments);
-  const { user } = useSelector(s => s.auth);
+  const { list, loading } = useSelector((s) => s.appointments);
+  const { user } = useSelector((s) => s.auth);
 
   useEffect(() => {
     dispatch(fetchAppointments({ limit: 10 }));
   }, [dispatch]);
 
-  const today = list.filter(a =>
-    new Date(a.date).toDateString() === new Date().toDateString()
+  const today = list.filter(
+    (a) => new Date(a.date).toDateString() === new Date().toDateString()
   );
 
   const handleCancel = async (apt) => {
-    const result = await dispatch(cancelAppointment({
-      id: apt._id,
-      cancellationReason: "Cancelled by doctor",
-    }));
+    const result = await dispatch(
+      cancelAppointment({
+        id: apt._id,
+        cancellationReason: "Cancelled by doctor",
+      })
+    );
     if (cancelAppointment.fulfilled.match(result)) {
       toast.success("Cancelled");
       dispatch(fetchAppointments({ limit: 10 }));
@@ -38,10 +41,12 @@ const DoctorDashboard = () => {
   };
 
   const handleConfirm = async (apt) => {
-    const result = await dispatch(updateAppointment({
-      id: apt._id,
-      data: { status: "Confirmed" },
-    }));
+    const result = await dispatch(
+      updateAppointment({
+        id: apt._id,
+        data: { status: "Confirmed" },
+      })
+    );
     if (updateAppointment.fulfilled.match(result)) {
       toast.success("Confirmed");
       dispatch(fetchAppointments({ limit: 10 }));
@@ -52,15 +57,15 @@ const DoctorDashboard = () => {
 
   return (
     <div className="space-y-6 mt-16">
-
-      <VerifyHeader/>
-
       <div>
         <h1 className="text-lg font-semibold">Doctor Dashboard</h1>
         <p className="text-xs text-muted-foreground">
           Manage your schedule and consultations.
         </p>
       </div>
+      <VerifyHeader />
+
+      <CompleteProfileBanner />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card>
@@ -85,10 +90,13 @@ const DoctorDashboard = () => {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold">
-              {list.filter(a => {
-                const diff = (new Date(a.date) - new Date()) / (1000*60*60*24);
-                return diff >=0 && diff <= 7;
-              }).length}
+              {
+                list.filter((a) => {
+                  const diff =
+                    (new Date(a.date) - new Date()) / (1000 * 60 * 60 * 24);
+                  return diff >= 0 && diff <= 7;
+                }).length
+              }
             </p>
             <p className="text-[11px] text-muted-foreground">Scheduled</p>
           </CardContent>

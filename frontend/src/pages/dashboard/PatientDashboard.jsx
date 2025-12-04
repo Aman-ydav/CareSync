@@ -7,6 +7,8 @@ import { CalendarDays, FileText, MessageSquare } from "lucide-react";
 import AppointmentList from "@/components/appointments/AppointmentList";
 import HealthRecordList from "@/components/health/HealthRecordList";
 import VerifyHeader from "@/components/dashboard/VerifyHeader";
+import CompleteProfileBanner from "@/components/dashboard/CompleteProfileBanner";
+
 
 const PatientDashboard = () => {
   const dispatch = useDispatch();
@@ -26,7 +28,7 @@ const PatientDashboard = () => {
   return (
     <div className="space-y-6 mt-16">
 
-      <VerifyHeader/>
+      
 
       {/* Top */}
       <div>
@@ -35,6 +37,11 @@ const PatientDashboard = () => {
           See your upcoming appointments, health records and AI assistant.
         </p>
       </div>
+
+      <VerifyHeader/>
+
+      <CompleteProfileBanner/>
+      
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
