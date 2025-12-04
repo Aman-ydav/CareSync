@@ -4,6 +4,7 @@ import { fetchAdminStats } from "@/features/admin/adminSlice";
 import { fetchAppointments } from "@/features/appointments/appointmentSlice";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Activity, Users, UserCheck, CalendarDays, FileText } from "lucide-react";
+import VerifyHeader from "@/components/dashboard/VerifyHeader";
 
 const StatCard = ({ icon: Icon, label, value, accent }) => (
   <Card className="border border-border/70">
@@ -33,7 +34,9 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6  mt-16">
-
+    
+        <VerifyHeader/>
+        
       <div>
         <h1 className="text-lg font-semibold">Admin Dashboard</h1>
         <p className="text-xs text-muted-foreground">

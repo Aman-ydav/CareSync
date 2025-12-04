@@ -4,7 +4,7 @@ import { verifyEmail, resendVerificationCode, hideVerificationModal } from "@/fe
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { Loader2, Mail, X, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -80,6 +80,7 @@ const VerificationModal = () => {
       setTimeout(() => inputRefs[0].current?.focus(), 100);
     } catch (err) {
       toast.error(err || "Failed to send verification code");
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, email]);

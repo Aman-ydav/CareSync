@@ -40,7 +40,7 @@ export const createAppointment = createAsyncThunk(
   async (payload, { rejectWithValue, dispatch }) => {
     try {
       const response = await api.post("/appointments", payload);
-      toast.success("Appointment created successfully");
+      // toast.success("Appointment created successfully");
       // Optionally refresh list
       dispatch(fetchAppointments({}));
       return response.data.data;
@@ -58,7 +58,7 @@ export const updateAppointment = createAsyncThunk(
   async ({ id, data }, { rejectWithValue, dispatch }) => {
     try {
       const response = await api.patch(`/appointments/${id}`, data);
-      toast.success("Appointment updated");
+      // toast.success("Appointment updated");
       dispatch(fetchAppointments({}));
       return response.data.data;
     } catch (error) {
@@ -77,7 +77,7 @@ export const cancelAppointment = createAsyncThunk(
       const response = await api.post(`/appointments/${id}/cancel`, {
         cancellationReason,
       });
-      toast.success("Appointment cancelled");
+      // toast.success("Appointment cancelled");
       dispatch(fetchAppointments({}));
       return response.data.data;
     } catch (error) {

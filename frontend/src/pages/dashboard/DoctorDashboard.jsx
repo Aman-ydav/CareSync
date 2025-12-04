@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CalendarDays, Stethoscope, Activity } from "lucide-react";
 import AppointmentList from "@/components/appointments/AppointmentList";
 import { toast } from "sonner";
+import VerifyHeader from "@/components/dashboard/VerifyHeader";
 
 const DoctorDashboard = () => {
   const dispatch = useDispatch();
@@ -51,6 +52,8 @@ const DoctorDashboard = () => {
 
   return (
     <div className="space-y-6 mt-16">
+
+      <VerifyHeader/>
 
       <div>
         <h1 className="text-lg font-semibold">Doctor Dashboard</h1>

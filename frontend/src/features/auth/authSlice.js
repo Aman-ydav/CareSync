@@ -185,7 +185,6 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-// Fix the getCurrentUser endpoint
 export const fetchCurrentUser = createAsyncThunk(
   "auth/fetchCurrentUser",
   async (_, { rejectWithValue }) => {

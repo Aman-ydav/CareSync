@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { AnimatePresence, motion } from "framer-motion";
+import VerificationModal from "@/components/auth/VerificationModal";
 
 const sidebarMotion = {
   initial: { x: "-100%" },
@@ -29,6 +30,9 @@ const DashboardLayout = () => {
 
   return (
     <div className="h-screen w-full flex bg-background overflow-hidden">
+
+
+        <VerificationModal />
 
       {/* Overlay for mobile */}
       {sidebarOpen && (

@@ -5,7 +5,7 @@ import { registerUser } from "@/features/auth/authSlice";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import {
   User,
   Mail,
@@ -108,11 +108,11 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
 
     const result = await dispatch(registerUser(fd)).unwrap();
 
-    toast.success("Account created successfully!");
+    // toast.success("Account created successfully!");
     onClose();
     navigate("/dashboard");
   } catch (err) {
-    toast.error(err || "Registration failed. Please try again.");
+    // toast.error(err || "Registration failed. Please try again.");
   }
 };
 

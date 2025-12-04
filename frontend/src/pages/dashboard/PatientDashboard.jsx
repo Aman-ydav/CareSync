@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CalendarDays, FileText, MessageSquare } from "lucide-react";
 import AppointmentList from "@/components/appointments/AppointmentList";
 import HealthRecordList from "@/components/health/HealthRecordList";
+import VerifyHeader from "@/components/dashboard/VerifyHeader";
 
 const PatientDashboard = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,9 @@ const PatientDashboard = () => {
 
   return (
     <div className="space-y-6 mt-16">
+
+      <VerifyHeader/>
+
       {/* Top */}
       <div>
         <h1 className="text-lg font-semibold">My Care</h1>

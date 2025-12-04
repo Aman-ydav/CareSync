@@ -25,13 +25,22 @@ import HealthRecordCreatePage from "@/pages/records/HealthRecordCreatePage";
 import AiAssistantPage from "@/pages/ai/AiAssistantPage";
 
 export default function AppRouter() {
-  const { user } = useSelector((state) => state.auth);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const getDashboardPath = () => {
-    if (!user) return "/login";
+    if (!user) return "/";
     if (user.role === "ADMIN") return "/dashboard/admin";
     if (user.role === "DOCTOR") return "/dashboard/doctor";
     return "/dashboard/patient";
+  };
+
+  // If logged in → redirect public pages to dashboard
+  const redirectIfLoggedIn = (element) => {
+    return isAuthenticated ? (
+      <Navigate to={getDashboardPath()} replace />
+    ) : (
+      element
+    );
   };
 
   return (
@@ -39,32 +48,39 @@ export default function AppRouter() {
 
       {/* ========= PUBLIC ROUTES =========== */}
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Home />} />
 
-        {/* Login/Register as modal overlay */}
+        {/* Home */}
+        <Route
+          path="/"
+          element={redirectIfLoggedIn(<Home />)}
+        />
+
+        {/* Login Modal */}
         <Route
           path="/login"
-          element={
+          element={redirectIfLoggedIn(
             <>
               <Home />
               <AuthModal type="login" />
             </>
-          }
+          )}
         />
 
+        {/* Register Modal */}
         <Route
           path="/register"
-          element={
+          element={redirectIfLoggedIn(
             <>
               <Home />
               <AuthModal type="register" />
             </>
-          }
+          )}
         />
+
       </Route>
 
 
-      {/* ====== DASHBOARD ROUTES (Protected) ====== */}
+      {/* ========= DASHBOARD ROUTES (Protected) =========== */}
       <Route
         path="/dashboard"
         element={
@@ -74,10 +90,12 @@ export default function AppRouter() {
         }
       >
 
-        {/* When user visits /dashboard route → redirect by role */}
+        {/* When user visits /dashboard → redirect to role-based page */}
         <Route
           index
-          element={<Navigate to={getDashboardPath()} replace />}
+          element={
+            <Navigate to={getDashboardPath()} replace />
+          }
         />
 
         {/* ADMIN */}
@@ -110,7 +128,9 @@ export default function AppRouter() {
           }
         />
 
+
         {/* ===== Shared routes under dashboard ===== */}
+
         {/* Appointments */}
         <Route
           path="appointments"

@@ -44,7 +44,7 @@ const LoginForm = ({ switchToRegister, onClose }) => {
         })
       ).unwrap();
 
-      toast.success("Welcome back to CareSync!");
+      // toast.success("Welcome back to CareSync!");
       onClose();
       navigate("/dashboard");
     } catch (err) {

@@ -2,21 +2,23 @@ import { useSelector, useDispatch } from "react-redux";
 import { showVerificationModal } from "@/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Mail, Timer } from "lucide-react";
-import { Link } from "react-router-dom";
-
 
 const VerifyHeader = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
+  const { verification } = useSelector(s => s.auth);
+
+
   const handleVerifyClick = () => {
+    // console.log(user);
     if (user?.email) {
       dispatch(showVerificationModal(user.email));
     }
   };
 
- 
-  if (!user || user.isVerified) return null;
+  if (!user) return null;
+  if (user.isVerified === true) return null;
 
   return (
     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
@@ -44,17 +46,6 @@ const VerifyHeader = () => {
             <Mail className="h-4 w-4 mr-2" />
             Verify Now
           </Button>
-         
-         <Link to="/dashboard">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-800"
-          >
-            <Timer className="h-4 w-4 mr-2" />
-            Do it Later
-          </Button>
-          </Link>
         </div>
       </div>
     </div>
