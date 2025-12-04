@@ -7,11 +7,13 @@ import {
   ShieldCheck,
   Stethoscope,
   UserCircle,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+
 
 const SidebarLink = ({ to, icon: Icon, label }) => (
   <NavLink
@@ -153,15 +155,22 @@ const DashboardSidebar = () => {
         )}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t px-4 py-4">
+      <div className="border-t px-4 py-4 space-y-2">
         <Button variant="outline" className="w-full justify-center" asChild>
-          <NavLink to="/profile">
+          <NavLink to="/dashboard/profile">
             <UserCircle className="mr-2 h-4 w-4" />
             Profile
           </NavLink>
         </Button>
+
+        <Button variant="outline" className="w-full justify-center" asChild>
+          <NavLink to="/dashboard/settings">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </NavLink>
+        </Button>
       </div>
+
     </motion.div>
   );
 };

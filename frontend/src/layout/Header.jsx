@@ -99,19 +99,10 @@ const Header = ({ onMenuToggle }) => {
 
                 <DropdownMenuSeparator />
 
-                {/* Dashboard */}
-                {location.pathname !== "/dashboard" && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-
+                
                 {/* Profile */}
                 <DropdownMenuItem asChild>
-                  <Link to="/profile">
+                  <Link to="/dashboard/profile">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
@@ -119,7 +110,7 @@ const Header = ({ onMenuToggle }) => {
 
                 {/* Settings */}
                 <DropdownMenuItem asChild>
-                  <Link to="/settings">
+                  <Link to="/dashboard/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </Link>

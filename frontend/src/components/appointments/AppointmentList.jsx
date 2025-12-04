@@ -89,7 +89,8 @@ const AppointmentList = ({ appointments, loading, onCancel, onConfirm }) => {
             <Button
               size="sm"
               variant="secondary"
-              onClick={() => navigate(`/appointments/${apt._id}`)}
+              onClick={() => navigate(`/dashboard/appointments/${apt._id}`)}
+
             >
               View
             </Button>
@@ -100,7 +101,8 @@ const AppointmentList = ({ appointments, loading, onCancel, onConfirm }) => {
                 size="sm"
                 variant="secondary"
                 onClick={() =>
-                  navigate(`/health-records/new?appointment=${apt._id}`)
+                  navigate(`/dashboard/records/new?appointment=${apt._id}`)
+
                 }
               >
                 Create Health Record

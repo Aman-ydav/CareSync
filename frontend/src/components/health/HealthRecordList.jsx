@@ -45,7 +45,7 @@ const HealthRecordList = ({ records, loading }) => {
             </div>
           </div>
           <div>
-            <Button size="sm" variant="outline" onClick={() => navigate(`/records/${rec._id}`)}>
+            <Button size="sm" variant="outline" onClick={() => navigate(`/dashboard/records/${rec._id}`)}>
               View
             </Button>
           </div>

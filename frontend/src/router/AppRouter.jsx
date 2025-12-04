@@ -25,6 +25,9 @@ import HealthRecordCreatePage from "@/pages/records/HealthRecordCreatePage";
 import AiAssistantPage from "@/pages/ai/AiAssistantPage";
 import CompleteProfilePage from "@/pages/profile/CompleteProfilePage";
 
+import Profile from "@/pages/profile/Profile";
+import Settings from "@/pages/Settings/Settings";
+
 export default function AppRouter() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -188,6 +191,25 @@ export default function AppRouter() {
           element={
             <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
               <CompleteProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Extra routes under dashboard */}
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="settings"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <Settings />
             </ProtectedRoute>
           }
         />

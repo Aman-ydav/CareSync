@@ -46,7 +46,7 @@ const AppLayout = () => {
 
       {/* MAIN CONTENT SCROLLS */}
       <main className="flex-1 overflow-y-auto pt-16 py-6 md:py-10">
-        <div className="mx-auto max-w-7xl w-full">
+        <div className="mx-auto  w-full">
           <Outlet />
         </div>
       </main>
