@@ -45,7 +45,7 @@ const AppLayout = () => {
       </AnimatePresence>
 
       {/* MAIN CONTENT SCROLLS */}
-      <main className="flex-1 overflow-y-auto pt-16 py-6 md:py-10">
+      <main className="flex-1 overflow-y-auto pt-16 ">
         <div className="mx-auto  w-full">
           <Outlet />
         </div>

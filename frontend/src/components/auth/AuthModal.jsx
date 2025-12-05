@@ -52,24 +52,25 @@ const AuthModal = ({ type }) => {
             className="relative w-full max-w-4xl mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
+            {/* Close button - Fixed positioning */}
             <button
               onClick={closeModal}
-              className="absolute -top-1 right-0 p-2 text-primary hover:text-ring transition-colors z-20 dark:text-primary dark:hover:text-ring/80"
+              className="absolute -top-10 right-0 p-2 text-white hover:bg-white/20 rounded-full transition-colors z-20"
+              aria-label="Close modal"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
 
             {/* Main container */}
             <div className="bg-white dark:bg-card rounded-xl shadow-xl overflow-hidden max-h-[85vh] flex border border-border dark:border-border/50">
 
               {/* Left Panel — Branding */}
-              <div className="hidden md:flex w-2/5 bg-linear-to-b from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 p-6">
+              <div className="hidden md:flex w-2/5 bg-card dark:bg-card/90 p-6 border-r border-border dark:border-border/50">
                 <div className="flex flex-col justify-center w-full">
 
                   {/* LOGO */}
                   <div className="flex items-center justify-center mb-6">
-                    <div className="p-4 rounded-xl bg-white dark:bg-card shadow-md border border-border dark:border-border/50">
+                    <div className="p-4 rounded-xl bg-white dark:bg-card/80 shadow-md border border-border dark:border-border/50">
                       <svg
                         className="w-8 h-8 text-primary dark:text-primary"
                         fill="none"
@@ -95,9 +96,9 @@ const AuthModal = ({ type }) => {
 
                   {/* Features */}
                   <div className="space-y-4">
-                    <div className="flex items-start space-x-3 bg-white/50 dark:bg-card/50 p-3 rounded-lg border border-border/50 dark:border-border/30">
-                      <div className="shrink-0 w-10 h-10 rounded-full bg-success/20 dark:bg-success/30 flex items-center justify-center">
-                        <span className="text-success-foreground dark:text-success">✔️</span>
+                    <div className="flex items-start space-x-3 bg-white dark:bg-card/50 p-3 rounded-lg border border-border dark:border-border/30">
+                      <div className="shrink-0 w-10 h-10 rounded-full bg-success/20 dark:bg-success/20 flex items-center justify-center border border-success/30 dark:border-success/30">
+                        <span className="text-success dark:text-success/90">✓</span>
                       </div>
                       <div>
                         <h3 className="text-sm font-semibold text-foreground dark:text-foreground">Book Appointments</h3>
@@ -107,9 +108,9 @@ const AuthModal = ({ type }) => {
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-3 bg-white/50 dark:bg-card/50 p-3 rounded-lg border border-border/50 dark:border-border/30">
-                      <div className="shrink-0 w-10 h-10 rounded-full bg-primary/20 dark:bg-primary/30 flex items-center justify-center">
-                        <span className="text-primary-foreground dark:text-primary">🏥</span>
+                    <div className="flex items-start space-x-3 bg-white dark:bg-card/50 p-3 rounded-lg border border-border dark:border-border/30">
+                      <div className="shrink-0 w-10 h-10 rounded-full bg-primary/20 dark:bg-primary/20 flex items-center justify-center border border-primary/30 dark:border-primary/30">
+                        <span className="text-primary dark:text-primary/90">🏥</span>
                       </div>
                       <div>
                         <h3 className="text-sm font-semibold text-foreground dark:text-foreground">View Doctor Profiles</h3>
@@ -119,9 +120,9 @@ const AuthModal = ({ type }) => {
                       </div>
                     </div>
 
-                    <div className="flex items-start space-x-3 bg-white/50 dark:bg-card/50 p-3 rounded-lg border border-border/50 dark:border-border/30">
-                      <div className="shrink-0 w-10 h-10 rounded-full bg-accent/20 dark:bg-accent/30 flex items-center justify-center">
-                        <span className="text-accent-foreground dark:text-accent">📄</span>
+                    <div className="flex items-start space-x-3 bg-white dark:bg-card/50 p-3 rounded-lg border border-border dark:border-border/30">
+                      <div className="shrink-0 w-10 h-10 rounded-full bg-accent/20 dark:bg-accent/20 flex items-center justify-center border border-accent/30 dark:border-accent/30">
+                        <span className="text-accent dark:text-accent/90">📄</span>
                       </div>
                       <div>
                         <h3 className="text-sm font-semibold text-foreground dark:text-foreground">OPD Records</h3>
