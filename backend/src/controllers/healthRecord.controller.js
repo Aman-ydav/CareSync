@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { HealthRecord } from "../models/HealthRecord.model.js";
+import { HealthRecord } from "../models/healthRecord.model.js";
 import { User } from "../models/user.model.js"; 
 
 const getHealthRecords = asyncHandler(async (req, res) => {

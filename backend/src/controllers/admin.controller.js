@@ -1,6 +1,6 @@
 import { User } from "../models/user.model.js";
-import { Appointment } from "../models/Appointment.model.js";
-import { HealthRecord } from "../models/HealthRecord.model.js";
+import { Appointment } from "../models/appointment.model.js";
+import { HealthRecord } from "../models/healthRecord.model.js";
 
 export const getAdminStats = async (req, res) => {
   const totalUsers = await User.countDocuments();

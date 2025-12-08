@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { Appointment } from "../models/Appointment.model.js";
+import { Appointment } from "../models/appointment.model.js";
 import { User } from "../models/user.model.js";
 
 const getAppointments = asyncHandler(async (req, res) => {

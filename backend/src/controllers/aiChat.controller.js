@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { ChatMessage } from "../models/ChatMessage.model.js";
+import { ChatMessage } from "../models/chatMessage.model.js";
 import "../config.js";
 
 // 1. TRIM THE VALUES TO REMOVE HIDDEN SPACES
