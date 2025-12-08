@@ -26,7 +26,7 @@ import AiAssistantPage from "@/pages/ai/AiAssistantPage";
 import CompleteProfilePage from "@/pages/profile/CompleteProfilePage";
 
 import Profile from "@/pages/profile/Profile";
-import Settings from "@/pages/Settings/Settings";
+import Settings from "@/pages/settings/Settings";
 
 export default function AppRouter() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
