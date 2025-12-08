@@ -140,22 +140,7 @@ const Header = ({ onMenuToggle }) => {
 
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Premium Badge */}
-              {user.role === "premium" && (
-                <div className="
-                  hidden sm:flex
-                  items-center gap-1
-                  px-3 py-1.5
-                  rounded-full
-                  bg-linear-to-r from-amber-500 to-orange-500
-                  text-white
-                  text-xs font-semibold
-                  shadow-lg shadow-amber-500/20
-                ">
-                  <BadgeCheck className="h-3 w-3" />
-                  Premium
-                </div>
-              )}
+              
 
               {/* User Dropdown */}
               <DropdownMenu>
@@ -197,12 +182,7 @@ const Header = ({ onMenuToggle }) => {
                         {user.role?.charAt(0).toUpperCase() + user.role?.slice(1)}
                       </span>
                     </div>
-                    <ChevronDown className="
-                      h-4 w-4
-                      text-muted-foreground
-                      group-data-[state=open]:rotate-180
-                      transition-transform duration-200
-                    " />
+                  
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -387,7 +367,6 @@ const Header = ({ onMenuToggle }) => {
               >
                 <Link to="/register">
                   Get Started
-                  <ChevronDown className="ml-1 h-4 w-4 rotate-90" />
                 </Link>
               </Button>
             </div>
