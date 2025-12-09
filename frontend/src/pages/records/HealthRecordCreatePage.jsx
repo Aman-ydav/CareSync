@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import AIInputEnhancer from "@/components/ai/AIInputEnhancer";
 
 export default function HealthRecordCreatePage() {
   const [searchParams] = useSearchParams();
@@ -57,7 +58,7 @@ export default function HealthRecordCreatePage() {
     <div className="max-w-2xl mx-auto mt-16">
       <Card>
         <CardHeader>
-          <CardTitle>Create Health Record</CardTitle>
+          <CardTitle className="text-lg font-semibold">Create Health Record</CardTitle>
           {appointment && (
             <p className="text-xs text-muted-foreground">
               Patient: {appointment.patient.fullName} • Date:{" "}
@@ -66,24 +67,62 @@ export default function HealthRecordCreatePage() {
           )}
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Diagnosis */}
           <div className="space-y-2">
             <label className="text-xs font-medium">Diagnosis *</label>
-            <Input value={diagnosis} onChange={(e)=>setDiagnosis(e.target.value)} />
+            <div className="relative">
+              <Input
+                value={diagnosis}
+                onChange={(e) => setDiagnosis(e.target.value)}
+              />
+              <AIInputEnhancer
+                value={diagnosis}
+                onChange={setDiagnosis}
+                context="Rewrite the diagnosis into clean medical wording"
+              />
+            </div>
           </div>
 
+          {/* Vitals */}
           <div className="space-y-2">
             <label className="text-xs font-medium">Vitals</label>
-            <Textarea rows={2} value={vitals} onChange={(e)=>setVitals(e.target.value)} />
+            <div className="relative">
+              <Textarea
+                rows={2}
+                value={vitals}
+                onChange={(e) => setVitals(e.target.value)}
+              />
+              <AIInputEnhancer
+                value={vitals}
+                onChange={setVitals}
+                context="Rewrite vital signs into standardized format"
+              />
+            </div>
           </div>
 
+          {/* Notes */}
           <div className="space-y-2">
             <label className="text-xs font-medium">Notes</label>
-            <Textarea rows={4} value={notes} onChange={(e)=>setNotes(e.target.value)} />
+            <div className="relative">
+              <Textarea
+                rows={4}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+              <AIInputEnhancer
+                value={notes}
+                onChange={setNotes}
+                context="Rewrite clinical notes in clean medical tone"
+              />
+            </div>
           </div>
 
+          {/* Actions */}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={()=>navigate(-1)}>Cancel</Button>
+            <Button variant="outline" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
             <Button onClick={handleCreate}>Create</Button>
           </div>
         </CardContent>

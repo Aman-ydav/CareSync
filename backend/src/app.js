@@ -11,6 +11,8 @@ import healthRecordRoutes from "./routes/healthRecord.routes.js";
 import appointmentRoutes from "./routes/appointment.routes.js";
 import aiChatRoutes from "./routes/aiChat.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import aiImprove from "./routes/aiImprove.route.js";
+
 
 const app = express();
 
@@ -70,6 +72,7 @@ app.use("/api/v1/health-records", healthRecordRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/v1/ai-chat", aiChatRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/ai", aiImprove);
 
 
 // 404 handler for API routes

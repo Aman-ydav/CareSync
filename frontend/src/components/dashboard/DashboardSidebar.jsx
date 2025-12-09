@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-
 const SidebarLink = ({ to, icon: Icon, label }) => (
   <NavLink
     to={to}
@@ -58,15 +57,15 @@ const DashboardSidebar = () => {
       initial="initial"
       animate="animate"
       exit="exit"
-      className="flex h-full w-64 flex-col bg-background/95 backdrop-blur border-r"
+      className="flex h-full w-64 flex-col bg-card border-r"
     >
       {/* Brand */}
-      <div className="flex items-center gap-2 border-b px-4 py-4">
+      <div className="flex items-center gap-2 border-b px-4 py-4.5 shadow-md bg-primary/10">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
           <ShieldCheck className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <p className="text-sm font-semibold">CareSync</p>
+          <p className="text-sm font-semibold text-foreground">CareSync</p>
           <p className="text-xs text-muted-foreground">HealthCloud</p>
         </div>
       </div>
@@ -156,21 +155,28 @@ const DashboardSidebar = () => {
       </nav>
 
       <div className="border-t px-4 py-4 space-y-2">
-        <Button variant="outline" className="w-full justify-center" asChild>
-          <NavLink to="/dashboard/profile">
+        <Button 
+          variant="outline" 
+          className="w-full justify-center border-input bg-background hover:bg-muted/50" 
+          asChild
+        >
+          <NavLink to="/dashboard/profile" className="text-foreground">
             <UserCircle className="mr-2 h-4 w-4" />
             Profile
           </NavLink>
         </Button>
 
-        <Button variant="outline" className="w-full justify-center" asChild>
-          <NavLink to="/dashboard/settings">
+        <Button 
+          variant="outline" 
+          className="w-full justify-center border-input bg-background hover:bg-muted/50" 
+          asChild
+        >
+          <NavLink to="/dashboard/settings" className="text-foreground">
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </NavLink>
         </Button>
       </div>
-
     </motion.div>
   );
 };

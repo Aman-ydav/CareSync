@@ -22,6 +22,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+import AIInputEnhancer from "@/components/ai/AIInputEnhancer";
+
 const NewAppointmentPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -38,9 +40,13 @@ const NewAppointmentPage = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    api.get("/users/doctors").then((res) => setDoctors(res.data.data)).catch(() => {
-      toast.error("Failed to load doctors");
-    });
+    api
+      .get("/users/doctors")
+      .then((res) => setDoctors(res.data.data))
+      .catch(() => {
+        toast.error("Failed to load doctors");
+      });
+
     return () => dispatch(clearSlots());
   }, []);
 
@@ -91,9 +97,16 @@ const NewAppointmentPage = () => {
 
         <CardContent className="space-y-6">
 
+          {/* Doctor */}
           <div className="space-y-1">
             <label className="text-xs font-medium">Doctor</label>
-            <Select value={doctorId} onValueChange={(v)=>{setDoctorId(v); setTime("")}}>
+            <Select
+              value={doctorId}
+              onValueChange={(v) => {
+                setDoctorId(v);
+                setTime("");
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select doctor" />
               </SelectTrigger>
@@ -107,9 +120,16 @@ const NewAppointmentPage = () => {
             </Select>
           </div>
 
+          {/* Consultation Type */}
           <div className="space-y-1">
             <label className="text-xs font-medium">Consultation Type</label>
-            <Select value={consultationType} onValueChange={(v)=>{setConsultationType(v);setTime("")}}>
+            <Select
+              value={consultationType}
+              onValueChange={(v) => {
+                setConsultationType(v);
+                setTime("");
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -120,11 +140,20 @@ const NewAppointmentPage = () => {
             </Select>
           </div>
 
+          {/* Date */}
           <div className="space-y-1">
             <label className="text-xs font-medium">Date</label>
-            <Input type="date" value={date} onChange={(e)=>{setDate(e.target.value);setTime("")}}/>
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => {
+                setDate(e.target.value);
+                setTime("");
+              }}
+            />
           </div>
 
+          {/* Slots */}
           {doctorId && date && (
             <div className="space-y-2">
               <label className="text-xs font-medium">Available Slots</label>
@@ -153,15 +182,24 @@ const NewAppointmentPage = () => {
             </div>
           )}
 
+          {/* Reason Textarea + AI Button */}
           <div className="space-y-1">
             <label className="text-xs font-medium">Reason</label>
-            <Textarea
-              rows={3}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
+            <div className="relative">
+              <Textarea
+                rows={3}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <AIInputEnhancer
+                value={reason}
+                onChange={setReason}
+                context={`Rewrite the appointment reason for ${consultationType} consultation`}
+              />
+            </div>
           </div>
 
+          {/* Actions */}
           <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
               Cancel
