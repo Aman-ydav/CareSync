@@ -146,10 +146,16 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function () {
+userSchema.pre("save", async function (next) {
+  if (!this.avatar && this.fullName) {
+    const { generateAvatar } = await import("../utils/avatarGenerator.js");
+    this.avatar = generateAvatar(this);
+  }
+  
   if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 10);
   this.confirmPassword = this.password;
+  
 });
 
 userSchema.methods.checkPassword = async function (password) {
