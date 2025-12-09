@@ -545,7 +545,7 @@ const deleteAccount = asyncHandler(async (req, res) => {
 export const getDoctors = asyncHandler(async (req, res) => {
   const doctors = await User.find(
     { role: "DOCTOR" },
-    "fullName avatar specialty qualification"
+    "fullName avatar specialty qualification experienceYears languagesSpoken about consultationHours"
   );
 
   return res.status(200).json(
@@ -553,6 +553,49 @@ export const getDoctors = asyncHandler(async (req, res) => {
   );
 });
 
+export const getDoctorProfile = asyncHandler(async (req, res) => {
+  const doctor = await User.findById(req.params.id)
+    .select("-password -confirmPassword -refreshToken -verificationCode");
+
+  if (!doctor || doctor.role !== "DOCTOR")
+    throw new ApiError(404, "Doctor not found");
+
+  return res.json(
+    new ApiResponse(200, doctor, "Doctor profile fetched")
+  );
+});
+
+export const getPatients = asyncHandler(async (req, res) => {
+  const patients = await User.find(
+    { role: "PATIENT" },
+    "fullName avatar dob gender bloodGroup medicalHistory allergies"
+  );
+
+  return res.json(
+    new ApiResponse(200, patients, "Patients fetched")
+  );
+});
+
+export const getPatientProfile = asyncHandler(async (req, res) => {
+  const patient = await User.findById(req.params.id)
+    .select("-password -confirmPassword -refreshToken -verificationCode");
+
+  if (!patient || patient.role !== "PATIENT")
+    throw new ApiError(404, "Patient not found");
+
+  return res.json(
+    new ApiResponse(200, patient, "Patient profile fetched")
+  );
+});
+
+export const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find()
+    .select("-password -confirmPassword -refreshToken -verificationCode");
+
+  return res.json(
+    new ApiResponse(200, users, "All users fetched")
+  );
+});
 
 export {
   registerUser,

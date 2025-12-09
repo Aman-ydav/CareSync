@@ -1,3 +1,4 @@
+// src/components/dashboard/DashboardSidebar.tsx
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,6 +9,7 @@ import {
   Stethoscope,
   UserCircle,
   Settings,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -60,7 +62,7 @@ const DashboardSidebar = () => {
       className="flex h-full w-64 flex-col bg-card border-r"
     >
       {/* Brand */}
-      <div className="flex items-center gap-2 border-b px-4 py-4.5 shadow-md bg-primary/10">
+      <div className="flex items-center gap-2 border-b px-4 py-4 shadow-xs bg-muted/10">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
           <ShieldCheck className="h-5 w-5 text-primary" />
         </div>
@@ -72,7 +74,6 @@ const DashboardSidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-4 px-3 py-4">
-
         {/* Overview */}
         <div>
           <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
@@ -111,53 +112,63 @@ const DashboardSidebar = () => {
           />
         </div>
 
-        {/* Admin */}
-        {role === "ADMIN" && (
+        {/* Directory */}
+        {(role === "PATIENT" || role === "DOCTOR" || role === "ADMIN") && (
           <div>
             <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
-              Admin
+              Directory
             </p>
-            <SidebarLink
-              to="/dashboard/admin"
-              icon={ShieldCheck}
-              label="Admin Panel"
-            />
-          </div>
-        )}
 
-        {/* Doctor */}
-        {role === "DOCTOR" && (
-          <div>
-            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
-              Doctor
-            </p>
-            <SidebarLink
-              to="/dashboard/doctor"
-              icon={Stethoscope}
-              label="Doctor View"
-            />
-          </div>
-        )}
+            {/* Patients can see list of doctors */}
+            {role === "PATIENT" && (
+              <SidebarLink
+                to="/dashboard/doctors"
+                icon={Stethoscope}
+                label="Doctors"
+              />
+            )}
 
-        {/* Patient */}
-        {role === "PATIENT" && (
-          <div>
-            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
-              Patient
-            </p>
-            <SidebarLink
-              to="/dashboard/patient"
-              icon={UserCircle}
-              label="My Care"
-            />
+            {/* Doctors can see list of patients (and optionally other doctors) */}
+            {role === "DOCTOR" && (
+              <>
+                <SidebarLink
+                  to="/dashboard/patients"
+                  icon={Users}
+                  label="Patients"
+                />
+                <SidebarLink
+                  to="/dashboard/doctors"
+                  icon={Stethoscope}
+                  label="Doctors"
+                />
+              </>
+            )}
+
+            {/* Admin sees both */}
+            {role === "ADMIN" && (
+              <>
+                <SidebarLink
+                  to="/dashboard/doctors"
+                  icon={Stethoscope}
+                  label="Doctors"
+                />
+                <SidebarLink
+                  to="/dashboard/patients"
+                  icon={Users}
+                  label="Patients"
+                />
+              </>
+            )}
           </div>
-        )}
+        )}   
+
       </nav>
 
+      {/* Bottom */}
       <div className="border-t px-4 py-4 space-y-2">
-        <Button 
-          variant="outline" 
-          className="w-full justify-center border-input bg-background hover:bg-muted/50" 
+        <Button
+          variant="outline"
+          className="w-full justify-center border-input bg-background hover:bg-muted/50"
           asChild
         >
           <NavLink to="/dashboard/profile" className="text-foreground">
@@ -166,9 +177,9 @@ const DashboardSidebar = () => {
           </NavLink>
         </Button>
 
-        <Button 
-          variant="outline" 
-          className="w-full justify-center border-input bg-background hover:bg-muted/50" 
+        <Button
+          variant="outline"
+          className="w-full justify-center border-input bg-background hover:bg-muted/50"
           asChild
         >
           <NavLink to="/dashboard/settings" className="text-foreground">

@@ -5,6 +5,8 @@ import healthRecordsReducer from "@/features/healthRecords/healthRecordSlice";
 import aiChatReducer from "@/features/aiChat/aiChatSlice";
 import adminReducer from "@/features/admin/adminSlice";
 import themeReducer from "@/features/theme/themeSlice";
+import doctorReducer from "@/features/auth/doctorSlice";
+import patientReducer from "@/features/auth/patientSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,5 +16,7 @@ export const store = configureStore({
     aiChat: aiChatReducer,
     admin: adminReducer,
     theme: themeReducer,
+    doctor: doctorReducer,
+    patient: patientReducer,
   },
 });

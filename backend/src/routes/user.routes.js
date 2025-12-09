@@ -14,10 +14,15 @@ import {
   updateUserAvatar,
   deleteAccount,
   resendVerificationCode,
+  getAllUsers,
+  getDoctorProfile,
+  getPatientProfile,
+  getPatients,
+  getDoctors
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { getDoctors } from "../controllers/user.controller.js";
+import { verifyJWT, verifyRole } from "../middlewares/auth.middleware.js";
+
 
 
 const router = Router();
@@ -60,6 +65,40 @@ router.route("/update-avatar").patch(
 
 router.route("/delete-account").delete(verifyJWT, deleteAccount);
 
-router.route("/doctors").get(verifyJWT, getDoctors);
+router.get(
+  "/doctors",
+  verifyJWT,
+  verifyRole(["PATIENT", "DOCTOR", "ADMIN"]),
+  getDoctors
+);
+
+router.get(
+  "/doctor/:id",
+  verifyJWT,
+  verifyRole(["PATIENT", "DOCTOR", "ADMIN"]),
+  getDoctorProfile
+);
+
+router.get(
+  "/patients",
+  verifyJWT,
+  verifyRole(["DOCTOR", "ADMIN"]),
+  getPatients
+);
+
+router.get(
+  "/patient/:id",
+  verifyJWT,
+  verifyRole(["DOCTOR", "ADMIN"]),
+  getPatientProfile
+);
+
+router.get(
+  "/all",
+  verifyJWT,
+  verifyRole(["ADMIN"]),
+  getAllUsers
+);
+
 
 export default router;

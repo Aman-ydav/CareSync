@@ -28,6 +28,11 @@ import CompleteProfilePage from "@/pages/profile/CompleteProfilePage";
 import Profile from "@/pages/profile/Profile";
 import Settings from "@/pages/settings/Settings";
 
+import DoctorsList from "@/pages/doctors/DoctorsList";
+import DoctorProfile from "@/pages/doctors/DoctorProfile";
+import PatientsList from "@/pages/patients/PatientsList";
+import PatientProfile from "@/pages/patients/PatientProfile";
+
 export default function AppRouter() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -173,6 +178,43 @@ export default function AppRouter() {
           element={
             <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
               <HealthRecordDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+         <Route
+          path="doctors"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <DoctorsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="doctors/:id"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR", "PATIENT"]}>
+              <DoctorProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="patients"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR"]}>
+              <PatientsList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="patients/:id"
+          element={
+            <ProtectedRoute roles={["ADMIN", "DOCTOR"]}>
+              <PatientProfile />
             </ProtectedRoute>
           }
         />
