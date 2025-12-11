@@ -76,9 +76,15 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid email format");
   if (password !== confirmPassword)
     throw new ApiError(400, "Passwords do not match");
+  const emailExists = await User.findOne({ email });
+  if (emailExists) {
+    throw new ApiError(409, "Email already exists");
+  }
 
-  const existingUser = await User.findOne({ $or: [{ email }, { userName }] });
-  if (existingUser) throw new ApiError(409, "User already exists");
+  const usernameExists = await User.findOne({ userName });
+  if (usernameExists) {
+    throw new ApiError(409, "Username is already taken");
+  }
 
   let avatarUrl = "";
   if (req.file?.path) avatarUrl = req.file.path;
@@ -114,7 +120,6 @@ const registerUser = asyncHandler(async (req, res) => {
     verificationCode,
     verificationCodeExpire: Date.now() + 10 * 60 * 1000,
   });
-
 
   // Generate tokens
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -253,7 +258,7 @@ const loginUser = asyncHandler(async (req, res) => {
           user: safeUser,
           accessToken,
           refreshToken,
-          requiresVerification: true,  
+          requiresVerification: true,
         },
         "Login successful. Please verify your email."
       )
@@ -548,21 +553,20 @@ export const getDoctors = asyncHandler(async (req, res) => {
     "fullName avatar specialty qualification experienceYears languagesSpoken about consultationHours"
   );
 
-  return res.status(200).json(
-    new ApiResponse(200, doctors, "Doctors fetched successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, doctors, "Doctors fetched successfully"));
 });
 
 export const getDoctorProfile = asyncHandler(async (req, res) => {
-  const doctor = await User.findById(req.params.id)
-    .select("-password -confirmPassword -refreshToken -verificationCode");
+  const doctor = await User.findById(req.params.id).select(
+    "-password -confirmPassword -refreshToken -verificationCode"
+  );
 
   if (!doctor || doctor.role !== "DOCTOR")
     throw new ApiError(404, "Doctor not found");
 
-  return res.json(
-    new ApiResponse(200, doctor, "Doctor profile fetched")
-  );
+  return res.json(new ApiResponse(200, doctor, "Doctor profile fetched"));
 });
 
 export const getPatients = asyncHandler(async (req, res) => {
@@ -571,30 +575,26 @@ export const getPatients = asyncHandler(async (req, res) => {
     "fullName avatar dob gender bloodGroup medicalHistory allergies"
   );
 
-  return res.json(
-    new ApiResponse(200, patients, "Patients fetched")
-  );
+  return res.json(new ApiResponse(200, patients, "Patients fetched"));
 });
 
 export const getPatientProfile = asyncHandler(async (req, res) => {
-  const patient = await User.findById(req.params.id)
-    .select("-password -confirmPassword -refreshToken -verificationCode");
+  const patient = await User.findById(req.params.id).select(
+    "-password -confirmPassword -refreshToken -verificationCode"
+  );
 
   if (!patient || patient.role !== "PATIENT")
     throw new ApiError(404, "Patient not found");
 
-  return res.json(
-    new ApiResponse(200, patient, "Patient profile fetched")
-  );
+  return res.json(new ApiResponse(200, patient, "Patient profile fetched"));
 });
 
 export const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find()
-    .select("-password -confirmPassword -refreshToken -verificationCode");
-
-  return res.json(
-    new ApiResponse(200, users, "All users fetched")
+  const users = await User.find().select(
+    "-password -confirmPassword -refreshToken -verificationCode"
   );
+
+  return res.json(new ApiResponse(200, users, "All users fetched"));
 });
 
 export {

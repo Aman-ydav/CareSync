@@ -92,7 +92,7 @@ const Header = ({ onMenuToggle }) => {
                 text-muted-foreground
                 font-medium
               ">
-                Apollo Digital Healthcare
+                Digital Healthcare
               </span>
             </div>
           </Link>

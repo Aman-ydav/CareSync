@@ -39,57 +39,52 @@
 :root {
   --radius: 0.625rem;
 
-  /* Medical Teal Primary - Calming, trustworthy, healthcare-focused */
-  --primary: oklch(0.58 0.14 195);
+  /* Brand Medical Primary */
+  --primary: oklch(0.60 0.14 195);
   --primary-foreground: oklch(0.99 0 0);
 
-  /* Soft Coral Accent - Warm, caring, human touch */
+  /* Accent – Warm Care */
   --accent: oklch(0.72 0.12 35);
-  --accent-foreground: oklch(0.15 0.02 240);
+  --accent-foreground: oklch(0.13 0.02 260);
 
-  /* Subtle Gray Secondary - Clean, minimal */
-  --secondary: oklch(0.96 0.01 240);
-  --secondary-foreground: oklch(0.30 0.02 240);
+  /* Background System */
+  --background: oklch(0.98 0.04 90); 
+  --foreground: oklch(0.23 0.02 240);
 
-  /* Warm White Background - Reduces eye strain */
-  --background: oklch(0.99 0.05 90); 
-  --foreground: oklch(0.25 0.02 240);
-
-  /* Pure White Cards - Maximum contrast and clarity */
+  /* Card System */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.02 240);
+  --card-foreground: var(--foreground);
 
-  /* Light Gray Muted - Softer than previous */
-  --muted: oklch(0.96 0.01 240);
-  --muted-foreground: oklch(0.50 0.03 240);
+  /* Muted Surfaces */
+  --muted: oklch(0.95 0.01 240);
+  --muted-foreground: oklch(0.45 0.03 240);
 
-  /* Subtle Borders - Less harsh */
-  --border: oklch(0.92 0.01 240);
+  /* Border + Inputs */
+  --border: oklch(0.90 0.01 240);
   --input: oklch(0.94 0.01 240);
-  --ring: oklch(0.55 0.18 240);
+  --ring: oklch(0.58 0.18 240);
 
-  /* Vibrant Red Destructive - Clear warning */
-  --destructive: oklch(0.58 0.22 25);
+  /* Feedback Colors */
+  --destructive: oklch(0.55 0.20 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  /* Fresh Green Success - Positive feedback */
   --success: oklch(0.65 0.18 145);
   --success-foreground: oklch(0.99 0 0);
+
+  /* Secondary neutral for icons */
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.30 0.02 240);
 }
 
-
 .dark {
-  --background: oklch(0.20 0.03 240);
-  --foreground: oklch(0.96 0.01 260);
+  --background: oklch(0.21 0.03 240);
+  --foreground: oklch(0.95 0.01 260);
 
-  --card: oklch(0.24 0.04 240);
-  --card-foreground: oklch(0.96 0.01 260);
+  --card: oklch(0.25 0.04 240);
+  --card-foreground: var(--foreground);
 
   --primary: oklch(0.65 0.14 196);
   --primary-foreground: oklch(0.12 0.02 260);
-
-  --secondary: oklch(0.28 0.05 230);
-  --secondary-foreground: oklch(0.96 0.01 260);
 
   --accent: oklch(0.80 0.12 90);
   --accent-foreground: oklch(0.12 0.02 260);

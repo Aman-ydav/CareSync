@@ -21,7 +21,7 @@ import {
 const RegisterForm = ({ switchToLogin, onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector((state) => state.auth);
 
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -64,24 +64,30 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
 
   const validateForm = () => {
     const newErrors = {};
+    
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+    
     if (!formData.email.trim()) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Invalid email";
+    
     if (!formData.userName.trim()) newErrors.userName = "Username is required";
+    
     if (!formData.gender) newErrors.gender = "Please select gender";
+    
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
+    
     if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
+    
     if (!formData.role) newErrors.role = "Please select your role";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  
   const handleAvatar = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -91,31 +97,40 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  try {
-    const fd = new FormData();
-    fd.append("userName", formData.userName);
-    fd.append("fullName", formData.fullName);
-    fd.append("email", formData.email);
-    fd.append("password", formData.password);
-    fd.append("confirmPassword", formData.confirmPassword);
-    fd.append("role", formData.role);
-    fd.append("gender", formData.gender);
+    try {
+      const fd = new FormData();
+      fd.append("userName", formData.userName);
+      fd.append("fullName", formData.fullName);
+      fd.append("email", formData.email);
+      fd.append("password", formData.password);
+      fd.append("confirmPassword", formData.confirmPassword);
+      fd.append("role", formData.role);
+      fd.append("gender", formData.gender);
 
-    if (avatar) fd.append("avatar", avatar);
+      if (avatar) fd.append("avatar", avatar);
 
-    const result = await dispatch(registerUser(fd)).unwrap();
+      const result = await dispatch(registerUser(fd)).unwrap();
 
-    // toast.success("Account created successfully!");
-    onClose();
-    navigate("/dashboard");
-  } catch (err) {
-    // toast.error(err || "Registration failed. Please try again.");
-  }
-};
-
+      // toast.success("Account created successfully!");
+      onClose();
+      navigate("/dashboard");
+    } catch (err) {
+      // Handle specific error messages from backend
+      if (err?.message?.includes("User already exists")) {
+        if (err?.message?.includes("email")) {
+          setErrors(prev => ({ ...prev, email: "Email is already registered" }));
+        } else if (err?.message?.includes("username")) {
+          setErrors(prev => ({ ...prev, userName: "Username is already taken" }));
+        } else {
+          setErrors(prev => ({ ...prev, email: "User already exists", userName: "User already exists" }));
+        }
+      }
+      // toast.error(err || "Registration failed. Please try again.");
+    }
+  };
 
   const roles = [
     { value: "PATIENT", label: "Patient", icon: UserCircle },
@@ -152,18 +167,23 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
             )}
           </div>
 
-          <input type="file"  name="avatar" accept="image/*" className="hidden" onChange={handleAvatar} />
+          <input 
+            type="file"  
+            name="avatar" 
+            accept="image/*" 
+            className="hidden" 
+            onChange={handleAvatar} 
+          />
 
-          <span className="absolute bottom-1 right-1 bg-primary text-white p-1 rounded-full">
+          <span className="absolute bottom-1 right-1 bg-primary text-primary-foreground p-1 rounded-full">
             <Camera className="w-4 h-4" />
           </span>
         </label>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Username */}
-        <div>
+        <div className="space-y-2.5">
           <Label>Username</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -175,13 +195,13 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               className="pl-9"
             />
           </div>
-          {errors.userName && <p className="text-xs text-destructive">{errors.userName}</p>}
+          {errors.userName && <p className="text-xs text-destructive mt-1">{errors.userName}</p>}
         </div>
 
         {/* Name + Email + Passwords */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-          <div>
+          <div className="space-y-2.5">
             <Label>Full Name</Label>
             <Input
               name="fullName"
@@ -189,10 +209,10 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               value={formData.fullName}
               onChange={handleChange}
             />
-            {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
+            {errors.fullName && <p className="text-xs text-destructive mt-1">{errors.fullName}</p>}
           </div>
 
-          <div>
+          <div className="space-y-2.5">
             <Label>Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -205,10 +225,10 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                 className="pl-9"
               />
             </div>
-            {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+            {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
           </div>
 
-          <div>
+          <div className="space-y-2.5">
             <Label>Password</Label>
             <Input
               name="password"
@@ -217,10 +237,10 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               value={formData.password}
               onChange={handleChange}
             />
-            {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+            {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
           </div>
 
-          <div>
+          <div className="space-y-2.5">
             <Label>Confirm Password</Label>
             <Input
               name="confirmPassword"
@@ -230,29 +250,31 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
               onChange={handleChange}
             />
             {errors.confirmPassword && (
-              <p className="text-xs text-destructive">{errors.confirmPassword}</p>
+              <p className="text-xs text-destructive mt-1">{errors.confirmPassword}</p>
             )}
           </div>
 
           {/* Gender */}
-          <div>
+          <div className="space-y-2.5">
             <Label>Gender</Label>
             <div className="relative" ref={genderRef}>
               <button
                 type="button"
                 onClick={() => setOpenGender(!openGender)}
-                className="w-full h-10 px-3 border rounded-md flex items-center justify-between"
+                className="w-full h-10 px-3 border rounded-md flex items-center justify-between bg-background hover:bg-muted/50 transition-colors"
               >
-                {formData.gender || "Select gender"}
-                <ChevronDown className="h-4 w-4" />
+                <span className="text-foreground">
+                  {formData.gender || "Select gender"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
               {openGender && (
-                <div className="absolute w-full bg-white border rounded-md mt-1 shadow">
+                <div className="absolute w-full bg-card border border-border rounded-md mt-1 shadow-lg z-50">
                   {genders.map((g) => (
                     <button
                       key={g.value}
                       type="button"
-                      className="w-full text-left px-3 py-2 hover:bg-muted"
+                      className="w-full text-left px-3 py-2 hover:bg-muted text-foreground transition-colors first:rounded-t-md last:rounded-b-md"
                       onClick={() => {
                         setFormData((p) => ({ ...p, gender: g.value }));
                         setOpenGender(false);
@@ -264,19 +286,19 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                 </div>
               )}
             </div>
-            {errors.gender && <p className="text-xs text-destructive">{errors.gender}</p>}
+            {errors.gender && <p className="text-xs text-destructive mt-1">{errors.gender}</p>}
           </div>
 
           {/* Role */}
-          <div>
+          <div className="space-y-2.5">
             <Label>I am a</Label>
             <div className="relative" ref={roleRef}>
               <button
                 type="button"
                 onClick={() => setOpenRole(!openRole)}
-                className="w-full h-10 px-3 border rounded-md flex items-center justify-between"
+                className="w-full h-10 px-3 border rounded-md flex items-center justify-between bg-background hover:bg-muted/50 transition-colors"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-foreground">
                   {formData.role ? (
                     <>
                       {getRoleIcon(formData.role)}
@@ -286,16 +308,16 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                     "Select role"
                   )}
                 </span>
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
 
               {openRole && (
-                <div className="absolute w-full bg-white border rounded-md mt-1 shadow">
+                <div className="absolute w-full bg-card border border-border rounded-md mt-1 shadow-lg z-50">
                   {roles.map((role) => (
                     <button
                       key={role.value}
                       type="button"
-                      className="w-full px-3 py-2 flex items-center gap-2 hover:bg-muted"
+                      className="w-full px-3 py-2 flex items-center gap-2 hover:bg-muted text-foreground transition-colors first:rounded-t-md last:rounded-b-md"
                       onClick={() => {
                         setFormData((p) => ({ ...p, role: role.value }));
                         setOpenRole(false);
@@ -308,15 +330,22 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
                 </div>
               )}
             </div>
-            {errors.role && <p className="text-xs text-destructive">{errors.role}</p>}
+            {errors.role && <p className="text-xs text-destructive mt-1">{errors.role}</p>}
           </div>
         </div>
+
+        {/* Global Error from Redux */}
+        {error && !error.message?.includes("already exists") && (
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+            <p className="text-sm text-destructive text-center">{error}</p>
+          </div>
+        )}
 
         {/* SUBMIT */}
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-11 bg-primary text-white"
+          className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors mt-2"
         >
           {loading ? (
             <>
@@ -332,7 +361,7 @@ const RegisterForm = ({ switchToLogin, onClose }) => {
       <div className="text-center pt-2">
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Button variant="link" onClick={switchToLogin} className="p-0 text-primary">
+          <Button variant="link" onClick={switchToLogin} className="p-0 text-primary hover:text-primary/80">
             Sign in
           </Button>
         </p>
