@@ -34,6 +34,7 @@ CareSync revolutionizes healthcare management by providing a unified platform wh
 ### 🤖 AI-Powered Assistant
 - Intelligent medical chat support
 - Symptom analysis and guidance
+- AI-powered text enhancement for medical documentation (diagnoses, notes, vital signs)
 - 24/7 availability for preliminary consultations
 - Integration with healthcare knowledge base
 

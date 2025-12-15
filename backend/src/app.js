@@ -6,7 +6,6 @@ import { ApiError } from "./utils/apiError.js";
 
 // Import all routes
 import userRoutes from "./routes/user.routes.js";
-// import hospitalRoutes from "./routes/hospital.routes.js";
 import healthRecordRoutes from "./routes/healthRecord.routes.js";
 import appointmentRoutes from "./routes/appointment.routes.js";
 import aiChatRoutes from "./routes/aiChat.routes.js";
