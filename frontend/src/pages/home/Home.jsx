@@ -10,7 +10,7 @@ import {
   Code,
   Server,
   Cloud,
-  ArrowRight,
+  CalendarCheck,
   Sparkles,
 } from "lucide-react";
 
@@ -94,8 +94,8 @@ const Home = () => {
                   className="bg-linear-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-primary-foreground text-base sm:text-lg px-8 sm:px-10 py-3 h-auto"
                 >
                   <Link to="/login">
-                    Get Started
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    Try Now
+                    {/* <ArrowRight className="w-5 h-5 ml-2" /> */}
                   </Link>
                 </Button>
               </div>
@@ -128,9 +128,16 @@ const Home = () => {
                     icon: Database,
                     color: "text-white",
                     bgColor: "bg-blue-600/70",
-                    position: "bottom-24 -right-8",
+                    position: "bottom-40 -right-19",
                     shadow: "shadow-lg shadow-blue-500/30",
                   },
+                  {text: "Book Appointment",
+                    icon: CalendarCheck,
+                    color: "text-white",
+                    bgColor: "bg-pink-600/70",
+                    position: "bottom-20 -left-24",
+                    shadow: "shadow-lg shadow-pink-500/30",
+                  }
                 ].map((item, index) => (
                   <div
                     key={index}

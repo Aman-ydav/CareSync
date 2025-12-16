@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   }, [dispatch]);
 
   return (
-    <div className="space-y-6  mt-16">
+    <div className="space-y-6">
     
         <VerifyHeader/>
 

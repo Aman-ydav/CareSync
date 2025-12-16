@@ -10,6 +10,7 @@ import {
   UserCircle,
   Settings,
   Users,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ const sidebarVariants = {
   },
 };
 
-const DashboardSidebar = () => {
+const DashboardSidebar = ({onClose}) => {
   const { role } = useAuth();
 
   return (
@@ -62,14 +63,27 @@ const DashboardSidebar = () => {
       className="flex h-full w-64 flex-col bg-card border-r"
     >
       {/* Brand */}
-      <div className="flex items-center gap-2 border-b px-4 py-4 shadow-xs bg-muted/10">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-          <ShieldCheck className="h-5 w-5 text-primary" />
+      {/* Brand */}
+      <div className="flex items-center justify-between border-b px-4 py-4 bg-muted/10">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">CareSync</p>
+            <p className="text-xs text-muted-foreground">HealthCloud</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-foreground">CareSync</p>
-          <p className="text-xs text-muted-foreground">HealthCloud</p>
-        </div>
+
+        {/* CLOSE BUTTON */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-8 w-8"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Navigation */}
@@ -160,8 +174,7 @@ const DashboardSidebar = () => {
               </>
             )}
           </div>
-        )}   
-
+        )}
       </nav>
 
       {/* Bottom */}

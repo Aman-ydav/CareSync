@@ -31,8 +31,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
-
-export default function DashboardHeader({ onToggleSidebar }) {
+export default function DashboardHeader({ onToggleSidebar, sidebarOpen }) {
   const { user } = useAuth();
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
@@ -79,14 +78,11 @@ export default function DashboardHeader({ onToggleSidebar }) {
       {/* LEFT SECTION */}
       <div className="flex items-center gap-4">
         {/* Mobile Sidebar Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleSidebar}
-          className="md:hidden"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
+        {!sidebarOpen && (
+          <Button variant="ghost" size="icon" onClick={onToggleSidebar}>
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
 
         {/* User Info */}
         <div className="flex flex-col">
@@ -137,10 +133,7 @@ export default function DashboardHeader({ onToggleSidebar }) {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent
-            align="end"
-            className="w-72 rounded-xl"
-          >
+          <DropdownMenuContent align="end" className="w-72 rounded-xl">
             {/* =========================
                 TOP USER 👤 INFO
             ========================== */}
@@ -191,10 +184,7 @@ export default function DashboardHeader({ onToggleSidebar }) {
                 Quick Links
             ========================== */}
             <DropdownMenuItem asChild>
-              <Link
-                to="/dashboard"
-                className="flex items-center gap-3 py-2"
-              >
+              <Link to="/dashboard" className="flex items-center gap-3 py-2">
                 <LayoutDashboard className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">Dashboard</span>
               </Link>

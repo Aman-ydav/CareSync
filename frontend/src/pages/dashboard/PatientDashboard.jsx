@@ -26,7 +26,7 @@ const PatientDashboard = () => {
       .sort((a, b) => new Date(a.date) - new Date(b.date))[0] || null;
 
   return (
-    <div className="space-y-6 mt-16">
+    <div className="space-y-6">
 
       
 

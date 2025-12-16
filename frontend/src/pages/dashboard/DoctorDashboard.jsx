@@ -56,7 +56,7 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div className="space-y-6 mt-16">
+    <div className="space-y-6">
       <div>
         <h1 className="text-lg font-semibold">Doctor Dashboard</h1>
         <p className="text-xs text-muted-foreground">
