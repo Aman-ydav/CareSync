@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Mail, Lock, Loader2, Stethoscope } from "lucide-react";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 const LoginForm = ({ switchToRegister, onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [forgotOpen, setForgotOpen] = useState(false);
   const { loading } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -126,9 +128,15 @@ const LoginForm = ({ switchToRegister, onClose }) => {
 
       {/* Footer */}
       <div className="text-center space-y-3">
-        <Button variant="link" className="text-sm text-primary dark:text-primary">
+        <Button variant="link" className="text-sm text-primary dark:text-primary"
+        onClick={() => setForgotOpen(true)}>
           Forgot your password?
         </Button>
+
+         <ForgotPasswordModal
+              isOpen={forgotOpen}
+              onClose={() => setForgotOpen(false)}
+            />
 
         <p className="text-sm text-muted-foreground dark:text-muted-foreground">
           Don't have an account?{" "}
